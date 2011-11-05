@@ -1,3 +1,5 @@
+#! /usr/bin/Rscript
+
 meteoRevel <- read.csv(file="Revel.csv",head=TRUE,sep=";")
 meteoMque <- read.csv(file="Martinique.csv",head=TRUE,sep=";")
 
@@ -20,7 +22,7 @@ plot_pluiehygro=function(pluie, hygro) {
 	plot.window(xlim=c(0,size), ylim=c(50,100), xaxs='i', yaxs='i')
 	axis (4)
 	mtext ('Hygro (%)', 4, line=3)
-	lines (seq(0.5,size-0.5,1), hygro, col="seagreen4")
+	lines (seq(from=0.5,to=size-0.5,by=1), hygro, col="seagreen4")
 	abline(h=meanHygro, col="seagreen4",lty=2)
 	box()
 }

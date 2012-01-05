@@ -7,6 +7,11 @@ def addQuotes( str ):
         return '"' + str + '"'
     return str
 
+# sed s/+ACI-//g -i Revel.csv
+# sed 's/+ADs-/;/g' -i Revel.csv
+    
+    #
+    
 # Iterate over standard input. NOTE - this isn't line-buffered, don't try using
 # this script interactively...
 for line in sys.stdin:

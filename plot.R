@@ -75,8 +75,8 @@ do_plot_single=function(data1) {
 
 	plot_temp(data1$Temp.max, data1$Temp.min)
 	title("Temperature extérieure")
-	plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	title("Température intérieure")
+	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
+	#title("Température intérieure")
 
 	plot_pression(data1$Pression)
 	title("Pression")
@@ -95,8 +95,8 @@ do_plot_multi=function(data1, data2) {
 	layout(matrix(1:3, 3, 1))
 	plot_temp(data1$Temp.max, data1$Temp.min)
 	title("Temperature extérieure (Revel)")
-	plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	title("Température intérieure (Revel)")
+	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
+	#title("Température intérieure (Revel)")
 	plot_temp(data2$Temp.max, data2$Temp.min)
 	title("(Martinique)")
 

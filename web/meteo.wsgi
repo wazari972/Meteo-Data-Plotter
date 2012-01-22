@@ -61,7 +61,7 @@ def write_line(filename, form):
         
 def application(environ, start_response):
     """Simplest possible application object"""
-    filename = "/srv/http/meteo/Revel2.csv"
+    filename = "/srv/http/meteo/Revel.csv"
     
     output = "<html><body>%s</body></html>"
     

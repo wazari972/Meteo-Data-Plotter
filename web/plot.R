@@ -2,10 +2,11 @@
 
 meteoGrenoble <- read.csv(file="Grenoble.csv",head=TRUE,sep=";")
 
-plot_pluie = function(pluie) {
+plot_pluie = function(pluie, with_mean) {
   pluie <- fill_gaps_zero(pluie)
   
-	meanPluie <- mean(pluie)
+  if (with_mean)
+	  meanPluie <- mean(pluie)
 	
 	pluie <- complete(pluie, 0, size)
   lty.o <- par("lty")
@@ -14,14 +15,16 @@ plot_pluie = function(pluie) {
 	barplot (pluie, space=0,  col='blue', ylab='Precipitations (mm)', axes=FALSE)
   # Reset to old value
   par(lty = lty.o)
-	abline(h=meanPluie, col="blue",lty=2)
+  
+  if (with_mean)
+	  abline(h=meanPluie, col="blue",lty=2)
 
 	axis (2, at=seq(0, max(pluie), 5))
   
 	box()
 }
 
-plot_hygro = function(hygro) {
+plot_hygro = function(hygro, with_mean) {
   hygro <- fill_gaps_linear(hygro)
   
 	meanHygro <- mean(hygro)
@@ -35,11 +38,12 @@ plot_hygro = function(hygro) {
 	axis (2)
 	mtext ('Hygro (%)', 2, line=3)
 	lines (seq(from=0.5, to=size-0.5,by=1), hygro, col="seagreen4")
-	abline(h=meanHygro, col="seagreen4", lty=2)
+  if (with_mean)
+	  abline(h=meanHygro, col="seagreen4", lty=2)
 	box()
 }
 
-plot_temp = function(max, min) {
+plot_temp = function(max, min, with_mean, with_min, with_max, with_med) {
   max <- fill_gaps_linear(max)
   min <- fill_gaps_linear(min)
   
@@ -51,26 +55,42 @@ plot_temp = function(max, min) {
 
 	max <- complete(max, meanMax, size)
 	min <- complete(min, meanMin, size)
-	
-	average <- get_avg(min, max)
 
 	plot.new()
 	plot.window(xlim=c(0,size), ylim=tempRange, xaxs='i', yaxs='i')
 	axis (2)
 	mtext ('Temp (??C)', 2, line=3)
-	lines (seq(0.5,size-0.5,1), max, col="tomato2")
-	abline(h=meanMax, col="tomato2",lty=2)
-	lines (seq(0.5,size-0.5,1), min, col="royalblue")
-	abline(h=meanMin, col="royalblue",lty=2)
-	lines (seq(0.5,size-0.5,1), average, col="royalblue")
+  
+  if (with_max) {
+	  lines (seq(0.5, size-0.5, 1), max, col="tomato2")
+    if (with_mean)
+	    abline(h=meanMax, col="tomato2",lty=2)
+  }
+  
+  if (with_min) {
+	  lines (seq(0.5, size-0.5, 1), min, col="royalblue")
+    if (with_mean)
+	    abline(h=meanMin, col="royalblue",lty=2)
+  }
+  
+  if (with_med) {
+    medium <- get_med(min, max)
+    
+	  lines (seq(0.5, size-0.5, 1), medium, col="seagreen4")
+	  if (with_mean) {
+	    meanMed <- mean(medium)
+	    abline(h=meanMed, col="seagreen4",lty=2)
+	  }
+  }
 	box()
 }
 
-plot_pression = function(pression) {
+plot_pression = function(pression, with_mean) {
   pression <- fill_gaps_linear(pression)
   
 	pression <- increase_to(pression, 1000)
 	pressionRange <- range(max(pression)+1, min(pression)-1) 
+  
 	meanPression <- mean(pression)
 
 	pression <- complete(pression, meanPression, size)
@@ -78,7 +98,9 @@ plot_pression = function(pression) {
 	axis (2)
 	mtext ('Pression (hPa)', 2, line=3)
 	lines (seq(0.5,size-0.5,1), pression, col="orange3")
-	abline(h=meanPression, col="orange3",lty=2)
+  if (with_mean)
+	  abline(h=meanPression, col="orange3",lty=2)
+  
 	box()
 }
 
@@ -189,12 +211,13 @@ increase_to = function(lst, value){
 	}
 	return(lst)
 }
-get_avg = function(lst1, lst2){
-	average <- list()
+
+get_med = function(lst1, lst2){
+	medium <- c()
 	for (t in 1:size) {
-		average <- c(average, (lst1[t] + lst1[t]) / 2)
+	  medium <- c(medium, (lst1[t] + lst2[t]) / 2)
 	}
-	return(average)
+	return(medium)
 }
 
 complete = function(lst, val, totalLength){
@@ -207,6 +230,6 @@ complete = function(lst, val, totalLength){
 }
 
 #do_plot_single(meteoBonnot)
-do_plot_single(meteoGrenoble)
+#do_plot_single(meteoGrenoble)
 
 #do_plot_multi(meteoRevel, meteoBonnot)

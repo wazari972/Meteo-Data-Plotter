@@ -2,24 +2,37 @@
 
 meteoGrenoble <- read.csv(file="Grenoble.csv",head=TRUE,sep=";")
 
-plot_pluie = function(pluie, with_mean) {
+plot_pluie = function(pluie, with_daily, with_mean, with_cumul) {
   pluie <- fill_gaps_zero(pluie)
   
   if (with_mean)
 	  meanPluie <- mean(pluie)
 	
 	pluie <- complete(pluie, 0, size)
-  lty.o <- par("lty")
 
-	par (mar=c(2, 4, 4, 4) + 0.1, lty=0)
-	barplot (pluie, space=0,  col='blue', ylab='Precipitations (mm)', axes=FALSE)
-  # Reset to old value
-  par(lty = lty.o)
+  mtext ('Precipitations (mm)', 2, line=3)
+  
+  if (with_daily) {
+    lty.o <- par("lty")
+    par (mar=c(2, 4, 4, 4) + 0.1, lty=0)
+  	bar <- barplot (pluie, col='blue')
+    par(lty = lty.o) # Reset to old value
+    axis (2, at=seq(0, max(pluie), 5))
+  } else {
+    plot.new()
+    
+  }
   
   if (with_mean)
-	  abline(h=meanPluie, col="blue",lty=2)
-
-	axis (2, at=seq(0, max(pluie), 5))
+	  abline(h=meanPluie, col="blue", lty=2)
+  
+  if (with_cumul) {
+    cumuled <- cumul(pluie)
+    par(new=TRUE)
+    plot.window(xlim=c(0, size), ylim=c(0,cumuled[length(pluie)]), xaxs='i', yaxs='i')
+    axis (4)
+    lines (seq(from=0.5, to=size-0.5, by=1), cumuled, col="darkblue")
+  }
   
 	box()
 }
@@ -38,8 +51,10 @@ plot_hygro = function(hygro, with_mean) {
 	axis (2)
 	mtext ('Hygro (%)', 2, line=3)
 	lines (seq(from=0.5, to=size-0.5,by=1), hygro, col="seagreen4")
+  
   if (with_mean)
 	  abline(h=meanHygro, col="seagreen4", lty=2)
+  
 	box()
 }
 
@@ -63,6 +78,7 @@ plot_temp = function(max, min, with_mean, with_min, with_max, with_med) {
   
   if (with_max) {
 	  lines (seq(0.5, size-0.5, 1), max, col="tomato2")
+	  
     if (with_mean)
 	    abline(h=meanMax, col="tomato2",lty=2)
   }
@@ -104,47 +120,14 @@ plot_pression = function(pression, with_mean) {
 	box()
 }
 
-do_plot_single = function(data1) {
-	size <<- length(data1$Date)
-	
-	plot_pluie(data1$Pluie)
-	title("Pluie")
-	
-	plot_hygro(data1$Hygro)
-	title("Hygrometrie")
+cumul = function(lst) {
+  current <- lst[1]
+  for (i in 2:length(lst)) {
+    current <- current + lst[i]
+    lst[i] <- current
+  }
+  return(lst)
 
-	plot_temp(data1$Temp.max, data1$Temp.min)
-	title("Temperature ext??rieure")
-	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	#title("Temp??rature int??rieure")
-
-	plot_pression(data1$Pression)
-	title("Pression")
-}
-
-do_plot_multi = function(data1, data2) {
-	size <- length(data1$Date)
-	size <<- max(size, length(data2$Date))
-	
-	layout(matrix(1:2, 2, 1))
-	plot_pluiehygro(data1$Pluie, data1$Hygro)
-	title("Pluie et Hygrom??trie (Revel)")
-	plot_pluiehygro(data2$Pluie, data2$Hygro)
-	title("(Martinique)")
-
-	layout(matrix(1:3, 3, 1))
-	plot_temp(data1$Temp.max, data1$Temp.min)
-	title("Temperature ext??rieure (Revel)")
-	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	#title("Temp??rature int??rieure (Revel)")
-	plot_temp(data2$Temp.max, data2$Temp.min)
-	title("(Martinique)")
-
-	layout(matrix(1:2, 2, 1))
-	plot_pression(data1$Pression)
-	title("Pression (Revel)")
-	plot_pression(data2$Pression)
-	title("(Martinique)")
 }
 
 fill_gaps_zero = function(lst){

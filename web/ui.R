@@ -16,25 +16,25 @@ shinyUI(pageWithSidebar(
                     value = FALSE),
         checkboxInput(inputId = "regression",
                     label = strong("Show regression curve"),
-                    value = FALSE),
+                    value = TRUE),
         conditionalPanel(condition = "input.regression == true",
                          sliderInput(inputId = "reg_adjust",
                                      label = "Regression adjustment:",
-                                     min = 0.2, max = 2, value = 1, step = 0.2)
+                                     min=0, max=1, value=0.35, step=0.2),
+                         checkboxInput(inputId = "opt_daily", label = "Daily values", value = TRUE)
         )
       ),
       conditionalPanel(condition = "input.what_minimax == true",
                        wellPanel(
                          p(strong("Temperature options")),
-                         checkboxInput(inputId = "opt_temp_min", label = "Minimal temperature", value = TRUE),
+                         checkboxInput(inputId = "opt_temp_max", label = "Maximal temperature", value = TRUE),
                          checkboxInput(inputId = "opt_temp_med", label = "Average temperature", value = FALSE),
-                         checkboxInput(inputId = "opt_temp_max", label = "Maximal temperature", value = TRUE)
+                         checkboxInput(inputId = "opt_temp_min", label = "Minimal temperature", value = FALSE)
                        )
       ),
       conditionalPanel(condition = "input.what_rain == true",
                        wellPanel(
                          p(strong("Rainfall options")),
-                         checkboxInput(inputId = "opt_rain_daily", label = "Daily rainfall", value = TRUE),
                          checkboxInput(inputId = "opt_rain_cumul", label = "Cumulative curve", value = TRUE)
                        )
       )

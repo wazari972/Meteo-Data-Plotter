@@ -2,42 +2,46 @@
 
 meteoGrenoble <- read.csv(file="Grenoble.csv",head=TRUE,sep=";")
 
-plot_pluie = function(pluie, with_daily, with_mean, with_cumul) {
+plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {
   pluie <- fill_gaps_zero(pluie)
   
-  if (with_mean)
+  if (with_mean) {
 	  meanPluie <- mean(pluie)
-	
-	pluie <- complete(pluie, 0, size)
-
-  mtext ('Precipitations (mm)', 2, line=3)
-  
-  if (with_daily) {
-    lty.o <- par("lty")
-    par (mar=c(2, 4, 4, 4) + 0.1, lty=0)
-  	bar <- barplot (pluie, col='blue')
-    par(lty = lty.o) # Reset to old value
-    axis (2, at=seq(0, max(pluie), 5))
-  } else {
-    plot.new()
-    
   }
   
-  if (with_mean)
-	  abline(h=meanPluie, col="blue", lty=2)
+	pluie <- complete(pluie, 0, size)
+
+  plot.new()
+  plot.window(xlim=c(0, size),  ylim=c(0, max(pluie)), xaxs='i', yaxs='i')
+  axis (2)
+  
+  if (with_daily) {
+    lines(pluie, type='h', lwd=2, lend=4, col='blue')
+  }
+  
+  if (with_reg) {
+    add_regression_curve(pluie, "red", reg_coeff)
+  }
+  
+  if (with_mean) {
+    abline(h=meanPluie, col="blue", lty=2)
+  }
   
   if (with_cumul) {
     cumuled <- cumul(pluie)
     par(new=TRUE)
-    plot.window(xlim=c(0, size), ylim=c(0,cumuled[length(pluie)]), xaxs='i', yaxs='i')
-    axis (4)
-    lines (seq(from=0.5, to=size-0.5, by=1), cumuled, col="darkblue")
+    
+    plot.window(xlim=c(0, size), ylim=c(0, cumuled[length(pluie)]), xaxs='i', yaxs='i')
+    axis(4, xlim=c(0, size), ylim=c(0, cumuled[length(pluie)]))
+    
+    lines(cumuled, col="darkblue")
   }
   
-	box()
+  mtext ('Precipitations (mm)', 2, line=3)
+  box()
 }
 
-plot_hygro = function(hygro, with_mean) {
+plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
   hygro <- fill_gaps_linear(hygro)
   
 	meanHygro <- mean(hygro)
@@ -47,18 +51,24 @@ plot_hygro = function(hygro, with_mean) {
 	hygroRange <- range(hygro)
 	
 	plot.new()
-	plot.window(xlim=c(0,size), ylim=c(min(hygroRange),100), xaxs='i', yaxs='i')
+	plot.window(xlim=c(0, size), ylim=c(min(hygroRange),100), xaxs='i', yaxs='i')
 	axis (2)
 	mtext ('Hygro (%)', 2, line=3)
-	lines (seq(from=0.5, to=size-0.5,by=1), hygro, col="seagreen4")
+  
+  if (with_daily) {
+	  lines(seq(0.5, size-0.5, 1), hygro, col="seagreen4")
+  }
   
   if (with_mean)
 	  abline(h=meanHygro, col="seagreen4", lty=2)
   
+  if (with_reg)
+    add_regression_curve(hygro, "purple", reg_coeff)
+  
 	box()
 }
 
-plot_temp = function(max, min, with_mean, with_min, with_max, with_med) {
+plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_med, with_reg, reg_coeff) {
   max <- fill_gaps_linear(max)
   min <- fill_gaps_linear(min)
   
@@ -77,31 +87,54 @@ plot_temp = function(max, min, with_mean, with_min, with_max, with_med) {
 	mtext ('Temp (??C)', 2, line=3)
   
   if (with_max) {
-	  lines (seq(0.5, size-0.5, 1), max, col="tomato2")
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), max, col="tomato2")
+    }
 	  
-    if (with_mean)
-	    abline(h=meanMax, col="tomato2",lty=2)
+    if (with_reg) {
+	    add_regression_curve(max, "royalblue", reg_coeff)
+    }
+    
+    if (with_mean) {
+	    abline(h=meanMax, col="tomato2", lty=2)
+    }
   }
   
   if (with_min) {
-	  lines (seq(0.5, size-0.5, 1), min, col="royalblue")
-    if (with_mean)
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), min, col="royalblue")
+    }
+    
+	  if (with_reg) {
+	    add_regression_curve(min, "tomato2", reg_coeff)
+	  }
+    
+    if (with_mean) {
 	    abline(h=meanMin, col="royalblue",lty=2)
+    }
   }
   
   if (with_med) {
     medium <- get_med(min, max)
     
-	  lines (seq(0.5, size-0.5, 1), medium, col="seagreen4")
-	  if (with_mean) {
-	    meanMed <- mean(medium)
-	    abline(h=meanMed, col="seagreen4",lty=2)
-	  }
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), medium, col="seagreen4")
+    }
+    
+    if (with_reg) {
+      add_regression_curve(medium, "purple", reg_coeff)
+    }
+    
+    if (with_mean) {
+      meanMed <- mean(medium)
+      abline(h=meanMed, col="seagreen4",lty=2)
+    }
   }
+  
 	box()
 }
 
-plot_pression = function(pression, with_mean) {
+plot_pression = function(pression, with_daily, with_mean, with_reg, reg_coeff) {
   pression <- fill_gaps_linear(pression)
   
 	pression <- increase_to(pression, 1000)
@@ -112,12 +145,27 @@ plot_pression = function(pression, with_mean) {
 	pression <- complete(pression, meanPression, size)
 	plot(0, 0, xlim=c(0,size), ylim=pressionRange, xaxs='i', yaxs='i')
 	axis (2)
-	mtext ('Pression (hPa)', 2, line=3)
-	lines (seq(0.5,size-0.5,1), pression, col="orange3")
-  if (with_mean)
+	mtext('Pression (hPa)', 2, line=3)
+  
+  if (with_daily) {
+	  lines(seq(0.5, size-0.5, 1), pression, col="orange3")
+  }
+  
+  if (with_mean) {
 	  abline(h=meanPression, col="orange3",lty=2)
+  }
+  
+  if (with_reg) {
+    add_regression_curve(pression, "purple", reg_coeff)
+  }
   
 	box()
+}
+
+add_regression_curve = function(data, color, coeff) {
+  curve <- smooth.spline(data, spar=coeff)
+  lines(curve, col=color)
+  return(curve)
 }
 
 cumul = function(lst) {
@@ -174,7 +222,6 @@ fill_gaps_linear = function(lst){
 		}
 		
 		# fill the gap
-
 		slice = (nxt-prev)/(j-i+1)
 		for (k in i:(j)) {
 		  # with linearily increasing values, between prev and nxt
@@ -183,7 +230,6 @@ fill_gaps_linear = function(lst){
 	}
 	return(lst)
 }
-#fill_gaps_linear(meteoRevel$Pluie)
 
 increase_to = function(lst, value){
 	for (i in 1:length(lst)) {
@@ -211,8 +257,3 @@ complete = function(lst, val, totalLength){
 		return(c(lst, seq(val, val, length=diff)))
 	}
 }
-
-#do_plot_single(meteoBonnot)
-#do_plot_single(meteoGrenoble)
-
-#do_plot_multi(meteoRevel, meteoBonnot)

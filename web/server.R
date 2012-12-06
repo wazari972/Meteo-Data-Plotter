@@ -1,8 +1,8 @@
 source("plot.R")
 
-data <- meteoGrenoble
-meteoGrenoble$Date <- as.Date(meteoGrenoble$Date, format="%d/%m/%Y")
-size <<- length(data$Date)
+size <- length(data$Date)
+
+data <- fix_data(meteoGrenoble)
 
 shinyServer(function(input, output) {
   output$plot_rain <- reactivePlot(function() { plot_pluie(data$Pluie, 
@@ -10,7 +10,7 @@ shinyServer(function(input, output) {
                                                            input$opt_rain_cumul,
                                                            input$regression, input$reg_adjust) })
   
-  output$plot_humid <- reactivePlot(function() { plot_hygro(data$Hygro, 
+  output$plot_humid <- reactivePlot(function() { plot_hygro(data$Hygrometrie, 
                                                             input$opt_daily,  input$average,
                                                             input$regression, input$reg_adjust) })
   

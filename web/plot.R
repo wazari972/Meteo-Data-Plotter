@@ -16,7 +16,7 @@ plot_summary = function (data) {
   #--Custom strip function:
   # (NB the colour used is the default lattice strip background colour)
   my.strip <- function(which.given, which.panel, ...) {
-    strip.labels <- c(lab.T.min, lab.T.max, lab.hum, lab.rain, lab.bar)
+    strip.labels <- c(lab.T.min, lab.T.max, lab.rain, lab.hum, lab.bar)
     panel.rect(0, 0, 1, 1, col="#ffe5cc", border=1)
     panel.text(x=0.5, y=0.5, adj=c(0.5, 0.55), cex=0.95,
                lab=strip.labels[which.panel[which.given]])
@@ -34,9 +34,9 @@ plot_summary = function (data) {
   col.lm <- "grey20"
   
   #--Create multipanel plot:
-  xyplot(Temp.max + Temp.min + Pluie + Hygrometrie ~ Date, data=data,
+  xyplot(Temp.min + Temp.max + Pluie + Hygrometrie + Pression ~ Date, data=data,
          scales=list(y="free", rot=0), xlim=xlim,
-         strip=my.strip, outer=TRUE, layout=c(1, 4, 1), ylab="",
+         strip=my.strip, outer=TRUE, layout=c(1, 5, 1), ylab="",
          panel=function(x, y, ...) {panel.grid(h=-1, v=0) # plot default horizontal gridlines
                                     panel.abline(v=d, col="grey90") # custom vertical gridlines
                                     panel.xyplot(x, y, ..., type="l",
@@ -47,7 +47,7 @@ plot_summary = function (data) {
                                                  lty=2, col=col.lm, lwd=1) # median value
          },
          key=list(text=list(c("raw data", "smoothed curve", "median value")),
-                  title="Birmingham Wast Hills Observatory average midday weather",
+                  title="Weather around Grenoble",
                   col=c(col.raw, col.smo, col.lm), lty=c(1, 1, 2),
                   columns=2, cex=0.95,
                   lines=TRUE
@@ -55,9 +55,7 @@ plot_summary = function (data) {
   )
 }
 
-plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {
-  pluie <- fill_gaps_zero(pluie)
-  
+plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {  
   if (with_mean) {
 	  meanPluie <- mean(pluie)
   }
@@ -94,9 +92,7 @@ plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_co
   box()
 }
 
-plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
-  hygro <- fill_gaps_linear(hygro)
-  
+plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {  
 	meanHygro <- mean(hygro)
 	
 	hygro <- complete(hygro, meanHygro, size)
@@ -122,9 +118,6 @@ plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
 }
 
 plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_med, with_reg, reg_coeff) {
-  max <- fill_gaps_linear(max)
-  min <- fill_gaps_linear(min)
-  
 	tempRange <- range(max, min)
 	tempRange <- range(min(0, min(tempRange)), max(tempRange, 35))
 
@@ -188,9 +181,6 @@ plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_m
 }
 
 plot_pression = function(pression, with_daily, with_mean, with_reg, reg_coeff) {
-  pression <- fill_gaps_linear(pression)
-  
-	pression <- increase_to(pression, 1000)
 	pressionRange <- range(max(pression)+1, min(pression)-1) 
   
 	meanPression <- mean(pression)
@@ -309,4 +299,17 @@ complete = function(lst, val, totalLength){
 	} else {
 		return(c(lst, seq(val, val, length=diff)))
 	}
+}
+
+fix_data = function(data) {
+  data$Date <- as.Date(data$Date, format="%d/%m/%Y")
+  
+  data$Pluie <- fill_gaps_zero(data$Pluie)
+  data$Hygrometrie <- fill_gaps_linear(data$Hygrometrie)
+  data$Temp.max <- fill_gaps_linear(data$Temp.max)
+  data$Temp.min <- fill_gaps_linear(data$Temp.min)
+  data$Pression <- fill_gaps_linear(data$Pression)
+  data$Pression <- increase_to(data$Pression, 1000)
+  
+  return(data)
 }

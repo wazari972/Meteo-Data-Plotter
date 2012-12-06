@@ -1,6 +1,7 @@
 source("plot.R")
 
 data <- meteoGrenoble
+meteoGrenoble$Date <- as.Date(meteoGrenoble$Date, format="%d/%m/%Y")
 size <<- length(data$Date)
 
 shinyServer(function(input, output) {
@@ -21,4 +22,5 @@ shinyServer(function(input, output) {
   output$plot_presure <- reactivePlot(function() { plot_pression(data$Pression,  
                                                                  input$opt_daily, input$average, 
                                                                  input$regression, input$reg_adjust) })
+  output$plot_summary <- reactivePlot(function() { plot_summary(data) })
 })

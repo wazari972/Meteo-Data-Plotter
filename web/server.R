@@ -4,7 +4,16 @@ source("plot.R")
 shinyServer(function(input, output) {
   
   selectedDataset <- reactive(function() {
+    if (is.null(input$location)) {
+      return (list())
+    }
     return (list(meteoData[[input$location]]))
+  })
+  
+  output$location_selector <- reactiveUI(function() {
+    selectInput(inputId = "location",
+                label = "Location:",
+                choices = ls(meteoData))
   })
   
   output$plot_rain <- reactivePlot(function() {
@@ -33,7 +42,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot_presure <- reactivePlot(function() {
+  output$plot_pressure <- reactivePlot(function() {
     for (data in selectedDataset()) {
       plot_pression(data$Date, data$Pression,  
                     input$opt_daily, input$average, 

@@ -48,9 +48,7 @@ plot_pluie = function (dates, pluie, with_daily, with_mean, with_cumul, with_reg
     init_graph(xlim=c(0, size),  ylim=c(0, cumuled[length(pluie)]), axe=4, new=FALSE)
     
     lines(cumuled, col="darkblue")
-  }
-  
-  
+  }  
 }
 
 plot_hygro = function (dates, hygro, with_daily, with_mean, with_reg, reg_coeff) {

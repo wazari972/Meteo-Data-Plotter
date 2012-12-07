@@ -6,13 +6,13 @@ shinyUI(pageWithSidebar(
   sidebarPanel(
     wellPanel(
       p(strong("Where")),
-      selectInput("location", "Location:", ls(meteoData))
+      uiOutput("location_selector")
     ),
     wellPanel(
       p(strong("What")),
       checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = FALSE),
       checkboxInput(inputId = "what_rain", label = "Rainfall", value = TRUE),
-      checkboxInput(inputId = "what_presure", label = "Presure", value = FALSE),
+      checkboxInput(inputId = "what_pressure", label = "Pressure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE)
     ),
     wellPanel(

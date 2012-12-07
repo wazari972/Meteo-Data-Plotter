@@ -55,6 +55,6 @@ shinyUI(pageWithSidebar(
     conditionalPanel(condition = "input.what_humid",
         plotOutput(outputId = "plot_humid")),
     conditionalPanel(condition = "input.what_summary",
-                     plotOutput(outputId = "plot_summary"))
+                     plotOutput(outputId = "plot_summary", height = "400px"))
   )
 ))

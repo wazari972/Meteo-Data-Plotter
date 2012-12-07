@@ -6,7 +6,7 @@ init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL) {
   if (new) {
     plot.new()
   } else {
-    par(new=TRUE)
+    #par(new=TRUE)
   }
   
   plot.window(xlim,  ylim, xaxs='i', yaxs='i')

@@ -4,20 +4,35 @@ source("plot.R")
 shinyServer(function(input, output) {
   
   selectedDataset <- reactive(function() {
-    if (is.null(input$location)) {
-      return (list())
+    ret = list(NULL)
+    
+    if (length(input$location) == 0)
+      return (ret)
+    
+    for(i in 1:length(input$location)) {
+      ret[i] <- list(meteoData[[input$location[i]]])
     }
-    return (list(meteoData[[input$location]]))
+    
+    return (ret)
   })
   
   output$location_selector <- reactiveUI(function() {
-    selectInput(inputId = "location",
+    checkboxGroupInput(inputId = "location",
                 label = "Location:",
                 choices = ls(meteoData))
   })
   
   output$plot_rain <- reactivePlot(function() {
-    for (data in selectedDataset()) {
+    dataset = selectedDataset()
+    
+    if (length(dataset) == 0 || is.null(dataset[[1]])) {
+      plot(c(0))
+      return ()
+    } 
+    
+    for (i in 1:length(dataset)) {
+      data = dataset[[i]]
+      
       plot_pluie(data$Date, data$Pluie, 
                  input$opt_daily, input$average, 
                  input$opt_rain_cumul,
@@ -27,7 +42,7 @@ shinyServer(function(input, output) {
   
   output$plot_humid <- reactivePlot(function() { 
     for (data in selectedDataset()) {
-      plot_hygro(data$Date, data$Hygro, 
+      plot_hygro(data$Date, data$Hygrometrie, 
                  input$opt_daily,  input$average,
                  input$regression, input$reg_adjust)
     } 

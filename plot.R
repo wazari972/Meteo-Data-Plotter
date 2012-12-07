@@ -1,49 +1,137 @@
 #! /usr/bin/Rscript
 
-meteoRevel <- read.csv(file="Revel.csv",head=TRUE,sep=";")
-meteoMque <- read.csv(file="Martinique.csv",head=TRUE,sep=";")
-meteoBonnot <- read.csv(file="Montbonnot.csv",head=TRUE,sep=";")
-meteoGrenoble <- read.csv(file="Grenoble.csv",head=TRUE,sep=";")
+require(lattice)
 
-
-plot_pluie = function(pluie) {
-  pluie <- fill_gaps_zero(pluie)
+init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL) {
+  if (new) {
+    plot.new()
+  } else {
+    #par(new=TRUE)
+  }
   
-	meanPluie <- mean(pluie)
-	
-	pluie <- complete(pluie, 0, size)
-  lty.o <- par("lty")
-
-	par (mar=c(2, 4, 4, 4) + 0.1, lty=0)
-	barplot (pluie, space=0,  col='blue', ylab='Precipitations (mm)', axes=FALSE)
-  # Reset to old value
-  par(lty = lty.o)
-	abline(h=meanPluie, col="blue",lty=2)
-
-	axis (2, at=seq(0, max(pluie), 5))
+  plot.window(xlim,  ylim, xaxs='i', yaxs='i')
+  axis (axe)
   
-	box()
+  if (!is.null(legend)) {
+    mtext (legend, 2, line=3)
+  }
+  
+  box()
 }
 
-plot_hygro = function(hygro) {
-  hygro <- fill_gaps_linear(hygro)
+# plot_summary(meteoData$Grenoble.csv)
+plot_summary = function (data) {
+  #--Define plot titles:
+  lab.bar <-  "Air pressure (hpa)"
+  lab.hum <-  "Humidity (%)"
+  lab.rain <- "Rainfall (mm/day)"
+  lab.T.min <- as.expression(expression( paste("Minimum temperature (",
+                                               degree*C, ")") ))
+  lab.T.max <- as.expression(expression( paste("Maximum temperature (",
+                                               degree*C, ")") ))
+
   
+  #--Custom strip function:
+  # (NB the colour used is the default lattice strip background colour)
+  my.strip <- function(which.given, which.panel, ...) {
+    strip.labels <- c(lab.T.min, lab.T.max, lab.rain, lab.hum, lab.bar)
+    panel.rect(0, 0, 1, 1, col="#ffe5cc", border=1)
+    panel.text(x=0.5, y=0.5, adj=c(0.5, 0.55), cex=0.95,
+               lab=strip.labels[which.panel[which.given]])
+  }
+  
+  #--Define X axis date range:
+  xlim <- range(data$Date)
+  
+  #--Define annual quarters for plot grid line markers:
+  d <- seq(from=xlim[1], to=xlim[2], by=365/4)
+  
+  #--Define colours for raw & smoothed data:
+  col.raw <- "#377EB8"    #colset[2] } see note above
+  col.smo <- "#E41A1C"    #colset[1] }
+  col.lm <- "grey20"
+  
+  #--Create multipanel plot:
+  xyplot(Temp.min + Temp.max + Pluie + Hygrometrie + Pression ~ Date, data=data,
+         scales=list(y="free", rot=0), xlim=xlim,
+         strip=my.strip, outer=TRUE, layout=c(1, 5, 1), ylab="",
+         panel=function(x, y, ...) {panel.grid(h=-1, v=0) # plot default horizontal gridlines
+                                    panel.abline(v=d, col="grey90") # custom vertical gridlines
+                                    panel.xyplot(x, y, ..., type="l",
+                                                 col=col.raw, lwd=0.5) # raw data
+                                    panel.loess(x, y, ..., col=col.smo,
+                                                span=0.14, lwd=0.5) # smoothed data
+                                    panel.abline(h=median(y, na.rm=TRUE),
+                                                 lty=2, col=col.lm, lwd=1) # median value
+         },
+         key=list(text=list(c("raw data", "smoothed curve", "median value")),
+                  title="Weather around Grenoble",
+                  col=c(col.raw, col.smo, col.lm), lty=c(1, 1, 2),
+                  columns=2, cex=0.95,
+                  lines=TRUE
+         ),
+  )
+}
+
+plot_pluie = function (dates, pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {  
+  size <- length(dates)
+  pluie <- fill_gaps_zero(pluie)
+  
+  if (with_mean) {
+	  meanPluie <- mean(pluie)
+  }
+  
+	pluie <- complete(pluie, 0, size)
+  
+  init_graph(xlim=c(0, size),  ylim=c(0, max(pluie)), legend='Precipitations (mm)')
+  
+  if (with_daily) {
+    lines(pluie, xaxt = "n",  type='h', lwd=2, lend=4, col='blue')
+  }
+  
+  if (with_reg) {
+    add_regression_curve(pluie, "red", reg_coeff)
+  }
+  
+  if (with_mean) {
+    abline(h=meanPluie, col="blue", lty=2)
+  }
+  
+  if (with_cumul) {
+    cumuled <- cumul(pluie)
+    par(new=TRUE)
+    
+    init_graph(xlim=c(0, size),  ylim=c(0, cumuled[length(pluie)]), axe=4, new=FALSE)
+    
+    lines(cumuled, col="darkblue")
+  }  
+}
+
+plot_hygro = function(dates, hygro, with_daily, with_mean, with_reg, reg_coeff) {  
 	meanHygro <- mean(hygro)
 	
 	hygro <- complete(hygro, meanHygro, size)
   
 	hygroRange <- range(hygro)
 	
-	plot.new()
-	plot.window(xlim=c(0,size), ylim=c(min(hygroRange),100), xaxs='i', yaxs='i')
-	axis (2)
-	mtext ('Hygro (%)', 2, line=3)
-	lines (seq(from=0.5, to=size-0.5,by=1), hygro, col="seagreen4")
-	abline(h=meanHygro, col="seagreen4", lty=2)
+  init_graph(xlim=c(0, size),  ylim=c(min(hygroRange), 100), legend='Hygro (%)')
+  
+  if (with_daily) {
+	  lines(seq(0.5, size-0.5, 1), hygro, col="seagreen4")
+  }
+  
+  if (with_mean)
+	  abline(h=meanHygro, col="seagreen4", lty=2)
+  
+  if (with_reg)
+    add_regression_curve(hygro, "purple", reg_coeff)
+  
 	box()
 }
 
-plot_temp = function(max, min) {
+plot_temp = function(dates, max, min, with_daily, with_mean, with_min, with_max, with_med, with_reg, reg_coeff) {
+  size <- length(dates)
+  
   max <- fill_gaps_linear(max)
   min <- fill_gaps_linear(min)
   
@@ -55,83 +143,102 @@ plot_temp = function(max, min) {
 
 	max <- complete(max, meanMax, size)
 	min <- complete(min, meanMin, size)
-	
-	average <- get_avg(min, max)
 
-	plot.new()
-	plot.window(xlim=c(0,size), ylim=tempRange, xaxs='i', yaxs='i')
-	axis (2)
-	mtext ('Temp (°C)', 2, line=3)
-	lines (seq(0.5,size-0.5,1), max, col="tomato2")
-	abline(h=meanMax, col="tomato2",lty=2)
-	lines (seq(0.5,size-0.5,1), min, col="royalblue")
-	abline(h=meanMin, col="royalblue",lty=2)
-	lines (seq(0.5,size-0.5,1), average, col="royalblue")
+  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (??C)')
+  
+  if (with_max) {
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), max, col="tomato2")
+    }
+	  
+    if (with_reg) {
+	    add_regression_curve(max, "royalblue", reg_coeff)
+    }
+    
+    if (with_mean) {
+	    abline(h=meanMax, col="tomato2", lty=2)
+    }
+  }
+  
+  if (with_min) {
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), min, col="royalblue")
+    }
+    
+	  if (with_reg) {
+	    add_regression_curve(min, "tomato2", reg_coeff)
+	  }
+    
+    if (with_mean) {
+	    abline(h=meanMin, col="royalblue",lty=2)
+    }
+  }
+  
+  if (with_med) {
+    medium <- get_med(min, max)
+    
+    if (with_daily) {
+	    lines (seq(0.5, size-0.5, 1), medium, col="seagreen4")
+    }
+    
+    if (with_reg) {
+      add_regression_curve(medium, "purple", reg_coeff)
+    }
+    
+    if (with_mean) {
+      meanMed <- mean(medium)
+      abline(h=meanMed, col="seagreen4",lty=2)
+    }
+  }
+  
 	box()
 }
 
-plot_pression = function(pression) {
-  pression <- fill_gaps_linear(pression)
+plot_pression = function(dates, pression, with_daily, with_mean, with_reg, reg_coeff) {
+  size <- length(dates)
   
-	pression <- increase_to(pression, 1000)
-	pressionRange <- range(max(pression)+1, min(pression)-1) 
+	pressionRange <- range(pression) 
+  pressionRange[1] <- pressionRange[1] - 1
+  pressionRange[2] <- pressionRange[2] + 1
+  
 	meanPression <- mean(pression)
 
-	pression <- complete(pression, meanPression, size)
-	plot(0, 0, xlim=c(0,size), ylim=pressionRange, xaxs='i', yaxs='i')
-	axis (2)
-	mtext ('Pression (hPa)', 2, line=3)
-	lines (seq(0.5,size-0.5,1), pression, col="orange3")
-	abline(h=meanPression, col="orange3",lty=2)
-	box()
+  init_graph(xlim=c(0, size),  ylim=pressionRange, legend='Pression (hPa)')
+  
+  if (with_daily) {
+	  lines(seq(0.5, size-0.5, 1), pression, col="orange3")
+  }
+  
+  if (with_mean) {
+	  abline(h=meanPression, col="orange3",lty=2)
+  }
+  
+  if (with_reg) {
+    add_regression_curve(pression, "purple", reg_coeff)
+  }
+  
+  box()
 }
 
-do_plot_single = function(data1) {
-	size <<- length(data1$Date)
-	
-	plot_pluie(data1$Pluie)
-	title("Pluie")
-	
-	plot_hygro(data1$Hygro)
-	title("Hygrometrie")
-
-	plot_temp(data1$Temp.max, data1$Temp.min)
-	title("Temperature extérieure")
-	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	#title("Température intérieure")
-
-	plot_pression(data1$Pression)
-	title("Pression")
+add_regression_curve = function(data, color, coeff) {
+  curve <- smooth.spline(data, spar=coeff)
+  lines(curve, col=color)
+  return(curve)
 }
 
-do_plot_multi = function(data1, data2) {
-	size <- length(data1$Date)
-	size <<- max(size, length(data2$Date))
-	
-	layout(matrix(1:2, 2, 1))
-	plot_pluiehygro(data1$Pluie, data1$Hygro)
-	title("Pluie et Hygrométrie (Revel)")
-	plot_pluiehygro(data2$Pluie, data2$Hygro)
-	title("(Martinique)")
+cumul = function(lst) {
+  current <- lst[1]
+  for (i in 2:length(lst)) {
+    current <- current + lst[i]
+    lst[i] <- current
+  }
+  return(lst)
 
-	layout(matrix(1:3, 3, 1))
-	plot_temp(data1$Temp.max, data1$Temp.min)
-	title("Temperature extérieure (Revel)")
-	#plot_temp(data1$Temp.int.max, data1$Temp.int.min)
-	#title("Température intérieure (Revel)")
-	plot_temp(data2$Temp.max, data2$Temp.min)
-	title("(Martinique)")
-
-	layout(matrix(1:2, 2, 1))
-	plot_pression(data1$Pression)
-	title("Pression (Revel)")
-	plot_pression(data2$Pression)
-	title("(Martinique)")
 }
 
 fill_gaps_zero = function(lst){
 	for (i in 1:length(lst)) {
-	  if (is.na(lst[i])) {
+	  if (is.null(lst[i]) || is.na(lst[i])) {
 	    lst[i] = 0
 	  }
 	}
@@ -142,7 +249,7 @@ fill_gaps_linear = function(lst){
   max <- length(lst)
 	for (i in 1:max) {
 	  #if we have an invalid value
-	  if (!is.na(lst[i])) {
+	  if (!(is.null(lst[i]) || is.na(lst[i]))) {
 	    next
 	  }
 
@@ -168,12 +275,11 @@ fill_gaps_linear = function(lst){
 		}
 		
 		#if we had no previous value, use the next valid one
-		if (is.na(prev)) {
+		if (is.null(prev) || is.na(prev)) {
 		  prev = nxt
 		}
 		
 		# fill the gap
-
 		slice = (nxt-prev)/(j-i+1)
 		for (k in i:(j)) {
 		  # with linearily increasing values, between prev and nxt
@@ -182,7 +288,6 @@ fill_gaps_linear = function(lst){
 	}
 	return(lst)
 }
-#fill_gaps_linear(meteoRevel$Pluie)
 
 increase_to = function(lst, value){
 	for (i in 1:length(lst)) {
@@ -193,12 +298,13 @@ increase_to = function(lst, value){
 	}
 	return(lst)
 }
-get_avg = function(lst1, lst2){
-	average <- list()
-	for (t in 1:size) {
-		average <- c(average, (lst1[t] + lst1[t]) / 2)
+
+get_med = function(lst1, lst2){
+	medium <- c()
+	for (t in 1:length(lst1)) {
+	  medium <- c(medium, (lst1[t] + lst2[t]) / 2)
 	}
-	return(average)
+	return(medium)
 }
 
 complete = function(lst, val, totalLength){
@@ -210,7 +316,15 @@ complete = function(lst, val, totalLength){
 	}
 }
 
-#do_plot_single(meteoBonnot)
-do_plot_single(meteoGrenoble)
-
-#do_plot_multi(meteoRevel, meteoBonnot)
+fix_data = function(data) {
+  data$Date <- as.Date(data$Date, format="%d/%m/%Y")
+  
+  data$Pluie <- fill_gaps_zero(data$Pluie)
+  data$Hygrometrie <- fill_gaps_linear(data$Hygrometrie)
+  data$Temp.max <- fill_gaps_linear(data$Temp.max)
+  data$Temp.min <- fill_gaps_linear(data$Temp.min)
+  data$Pression <- fill_gaps_linear(data$Pression)
+  data$Pression <- increase_to(data$Pression, 1000)
+  
+  return(data)
+}

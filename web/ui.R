@@ -1,16 +1,22 @@
+source("config.R")
+
 shinyUI(pageWithSidebar(
   headerPanel("Meteo"),
 
   sidebarPanel(
     wellPanel(
-      p(strong("Data")),
+      p(strong("Where")),
+      selectInput("location", "Location:", ls(meteoData))
+    ),
+    wellPanel(
+      p(strong("What")),
       checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = FALSE),
       checkboxInput(inputId = "what_rain", label = "Rainfall", value = TRUE),
       checkboxInput(inputId = "what_presure", label = "Presure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE)
     ),
     wellPanel(
-      p(strong("General options")),
+      p(strong("How")),
         checkboxInput(inputId = "average",
                     label = strong("Show average"),
                     value = FALSE),
@@ -29,7 +35,7 @@ shinyUI(pageWithSidebar(
                          p(strong("Temperature options")),
                          checkboxInput(inputId = "opt_temp_max", label = "Maximal temperature", value = TRUE),
                          checkboxInput(inputId = "opt_temp_med", label = "Average temperature", value = FALSE),
-                         checkboxInput(inputId = "opt_temp_min", label = "Minimal temperature", value = FALSE)
+                         checkboxInput(inputId = "opt_temp_min", label = "Minimal temperature", value = TRUE)
                        )
       ),
       conditionalPanel(condition = "input.what_rain == true",

@@ -1,8 +1,25 @@
-#! /usr/bin/Rscript
+source("config.R")
 
-meteoGrenoble <- read.csv(file="Grenoble.csv",head=TRUE,sep=";")
+init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL) {
+  if (new) {
+    plot.new()
+  } else {
+    par(new=TRUE)
+  }
+  
+  plot.window(xlim,  ylim, xaxs='i', yaxs='i')
+  axis (axe)
+  
+  if (!is.null(legend)) {
+    mtext (legend, 2, line=3)
+  }
+  
+  box()
+}
 
-plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {
+plot_pluie = function (dates, pluie, with_daily, with_mean, with_cumul, with_reg, reg_coeff) {
+  size  <- length(dates)
+  
   pluie <- fill_gaps_zero(pluie)
   
   if (with_mean) {
@@ -10,13 +27,11 @@ plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_co
   }
   
 	pluie <- complete(pluie, 0, size)
-
-  plot.new()
-  plot.window(xlim=c(0, size),  ylim=c(0, max(pluie)), xaxs='i', yaxs='i')
-  axis (2)
+  
+  init_graph(xlim=c(0, size),  ylim=c(0, max(pluie)), legend='Precipitations (mm)')
   
   if (with_daily) {
-    lines(pluie, type='h', lwd=2, lend=4, col='blue')
+    lines(pluie, xaxt = "n",  type='h', lwd=2, lend=4, col='blue')
   }
   
   if (with_reg) {
@@ -29,19 +44,18 @@ plot_pluie = function(pluie, with_daily, with_mean, with_cumul, with_reg, reg_co
   
   if (with_cumul) {
     cumuled <- cumul(pluie)
-    par(new=TRUE)
     
-    plot.window(xlim=c(0, size), ylim=c(0, cumuled[length(pluie)]), xaxs='i', yaxs='i')
-    axis(4, xlim=c(0, size), ylim=c(0, cumuled[length(pluie)]))
+    init_graph(xlim=c(0, size),  ylim=c(0, cumuled[length(pluie)]), axe=4, new=FALSE)
     
     lines(cumuled, col="darkblue")
   }
   
-  mtext ('Precipitations (mm)', 2, line=3)
-  box()
+  
 }
 
-plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
+plot_hygro = function (dates, hygro, with_daily, with_mean, with_reg, reg_coeff) {
+  size  <- length(dates)
+  
   hygro <- fill_gaps_linear(hygro)
   
 	meanHygro <- mean(hygro)
@@ -50,10 +64,7 @@ plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
   
 	hygroRange <- range(hygro)
 	
-	plot.new()
-	plot.window(xlim=c(0, size), ylim=c(min(hygroRange),100), xaxs='i', yaxs='i')
-	axis (2)
-	mtext ('Hygro (%)', 2, line=3)
+  init_graph(xlim=c(0, size),  ylim=c(min(hygroRange), 100), legend='Hygro (%)')
   
   if (with_daily) {
 	  lines(seq(0.5, size-0.5, 1), hygro, col="seagreen4")
@@ -68,7 +79,9 @@ plot_hygro = function(hygro, with_daily, with_mean, with_reg, reg_coeff) {
 	box()
 }
 
-plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_med, with_reg, reg_coeff) {
+plot_temp = function (dates, max, min, with_daily, with_mean, with_min, with_max, with_med, with_reg, reg_coeff) {
+  size  <- length(dates)
+  
   max <- fill_gaps_linear(max)
   min <- fill_gaps_linear(min)
   
@@ -81,10 +94,7 @@ plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_m
 	max <- complete(max, meanMax, size)
 	min <- complete(min, meanMin, size)
 
-	plot.new()
-	plot.window(xlim=c(0,size), ylim=tempRange, xaxs='i', yaxs='i')
-	axis (2)
-	mtext ('Temp (??C)', 2, line=3)
+  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (°C)')
   
   if (with_max) {
     if (with_daily) {
@@ -134,7 +144,9 @@ plot_temp = function(max, min, with_daily, with_mean, with_min, with_max, with_m
 	box()
 }
 
-plot_pression = function(pression, with_daily, with_mean, with_reg, reg_coeff) {
+plot_pression = function (dates, pression, with_daily, with_mean, with_reg, reg_coeff) {
+  size  <- length(pression)
+  
   pression <- fill_gaps_linear(pression)
   
 	pression <- increase_to(pression, 1000)
@@ -142,10 +154,7 @@ plot_pression = function(pression, with_daily, with_mean, with_reg, reg_coeff) {
   
 	meanPression <- mean(pression)
 
-	pression <- complete(pression, meanPression, size)
-	plot(0, 0, xlim=c(0,size), ylim=pressionRange, xaxs='i', yaxs='i')
-	axis (2)
-	mtext('Pression (hPa)', 2, line=3)
+  init_graph(xlim=c(0, size),  ylim=pressionRange, legend='Pression (hPa)')
   
   if (with_daily) {
 	  lines(seq(0.5, size-0.5, 1), pression, col="orange3")
@@ -158,40 +167,38 @@ plot_pression = function(pression, with_daily, with_mean, with_reg, reg_coeff) {
   if (with_reg) {
     add_regression_curve(pression, "purple", reg_coeff)
   }
-  
-	box()
 }
 
-add_regression_curve = function(data, color, coeff) {
+add_regression_curve = function (data, color, coeff) {
   curve <- smooth.spline(data, spar=coeff)
   lines(curve, col=color)
-  return(curve)
+  return (curve)
 }
 
-cumul = function(lst) {
+cumul = function (lst) {
   current <- lst[1]
   for (i in 2:length(lst)) {
     current <- current + lst[i]
     lst[i] <- current
   }
-  return(lst)
+  return (lst)
 
 }
 
-fill_gaps_zero = function(lst){
+fill_gaps_zero = function (lst){
 	for (i in 1:length(lst)) {
-	  if (is.na(lst[i])) {
+	  if (is.null(lst[i]) || is.na(lst[i])) {
 	    lst[i] = 0
 	  }
 	}
-	return(lst)
+	return (lst)
 }
 
-fill_gaps_linear = function(lst){
-  max <- length(lst)
-	for (i in 1:max) {
+fill_gaps_linear = function (lst){
+  size <- length(lst)
+	for (i in 1:size) {
 	  #if we have an invalid value
-	  if (!is.na(lst[i])) {
+	  if (!(is.null(lst[i]) || is.na(lst[i]))) {
 	    next
 	  }
 
@@ -203,13 +210,13 @@ fill_gaps_linear = function(lst){
     }	  
 	  #set j to next valid value
 	  j <- i + 1
-		while (j < max && is.na(lst[j])) {
+		while (j < size && is.na(lst[j])) {
 		  j <- j+1
 		}
 		# i == j impossible
 		
 		# if we didn't reach the end of the list,
-		if (j != max) {
+		if (j != size) {
       nxt = lst[j]
 		} else {
 		  # use the last valid value
@@ -217,7 +224,7 @@ fill_gaps_linear = function(lst){
 		}
 		
 		#if we had no previous value, use the next valid one
-		if (is.na(prev)) {
+		if (is.null(prev) || is.na(prev)) {
 		  prev = nxt
 		}
 		
@@ -228,32 +235,32 @@ fill_gaps_linear = function(lst){
 		  lst[k] = prev + slice*(k-i+1)
 		}
 	}
-	return(lst)
+	return (lst)
 }
 
-increase_to = function(lst, value){
+increase_to = function (lst, value){
 	for (i in 1:length(lst)) {
 		if (lst[i] < value)
 			lst[i] <- lst[i] + value
 		else 
 			break
 	}
-	return(lst)
+	return (lst)
 }
 
-get_med = function(lst1, lst2){
+get_med = function (lst1, lst2){
 	medium <- c()
-	for (t in 1:size) {
+	for (t in 1:length(lst1)) {
 	  medium <- c(medium, (lst1[t] + lst2[t]) / 2)
 	}
-	return(medium)
+	return (medium)
 }
 
-complete = function(lst, val, totalLength){
+complete = function (lst, val, totalLength){
 	diff <- totalLength - length(lst)
 	if (diff == 0) {
-		return(lst)
+		return (lst)
 	} else {
-		return(c(lst, seq(val, val, length=diff)))
+		return (c(lst, seq(val, val, length=diff)))
 	}
 }

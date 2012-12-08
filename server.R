@@ -1,23 +1,15 @@
 source("plot.R")
 source("config.R")
 
-splitPlot <- function (idx, len) {
-  if (idx == 1) {
-    par(mfrow=c(len, 1))
-  } else {
-    #par()
-  }
-}
-
-shinyServer(function(input, output) {
-  selectedDataset <- reactive(function() {
+shinyServer(function (input, output) {
+  selectedDataset <- reactive(function () {
     ret = list(NULL)
     
     if (length(input$location) == 0)
       return (ret)
     
     for(i in 1:length(input$location)) {
-      ret[i] <- list(meteoData[[input$location[i]]])
+      ret[[i]] <- list(input$location[i], meteoData[[input$location[i]]])
     }
     
     return (ret)
@@ -30,67 +22,32 @@ shinyServer(function(input, output) {
   })
   
   output$plot_rain <- reactivePlot(function() {
-    dataset = selectedDataset()
-    
-    if (length(dataset) == 0 || is.null(dataset[[1]])) {
-      return ()
-    } 
-    
-    for (i in 1:length(dataset)) {
-      data = dataset[[i]]
-      
-      splitPlot(i, length(dataset))
-      
-      plot_pluie(data$Date, data$Pluie, input)
-    }
+    splitPlots(selectedDataset(), function(name, data) {
+      plot_pluie(name, data$Date, data$Pluie, input)
+    })
   })
   
   output$plot_humid <- reactivePlot(function() { 
-    dataset = selectedDataset()
-    
-    if (length(dataset) == 0 || is.null(dataset[[1]])) {
-      return ()
-    } 
-    
-    for (i in 1:length(dataset)) {
-      data = dataset[[i]]
-      
-      splitPlot(i, length(dataset))
-      
-      plot_hygro(data$Date, data$Hygrometrie, input)
-    } 
+    splitPlots(selectedDataset(), function(name, data) {
+      plot_hygro(name, data$Date, data$Hygrometrie, input)
+    })
   })
   
   output$plot_minimax <- reactivePlot(function() { 
-    dataset = selectedDataset()
-    
-    if (length(dataset) == 0 || is.null(dataset[[1]])) {
-      return ()
-    } 
-    
-    for (i in 1:length(dataset)) {
-      data = dataset[[i]]
-      
-      splitPlot(i, length(dataset))
-      
-      plot_temp(data$Date, data$Temp.max, data$Temp.min,  input)
-    }
+    splitPlots(selectedDataset(), function(name, data) {
+      plot_temp(name, data$Date, data$Temp.max, data$Temp.min,  input)
+    })
   })
   
   output$plot_pressure <- reactivePlot(function() {
-    dataset = selectedDataset()
-    
-    if (length(dataset) == 0 || is.null(dataset[[1]])) {
-      return ()
-    } 
-    
-    for (i in 1:length(dataset)) {
-      data = dataset[[i]]
-      
-      splitPlot(i, length(dataset))
-      
-      plot_pression(data$Date, data$Pression, input)
-    }
-  output$plot_summary <- reactivePlot(function() { plot_summary(data) })
+    splitPlots(selectedDataset(), function(name, data) {
+      plot_pression(name, data$Date, data$Pression, input)
+    })
+  })
+                                       
+  output$plot_summary <- reactivePlot(function() { 
+    splitPlots(selectedDataset(), function(name, data) {
+      plot_summary(name, data, input) 
+    })
   })
 })

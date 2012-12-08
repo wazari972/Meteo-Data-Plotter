@@ -4,7 +4,29 @@ source("tools.R")
 
 require(lattice)
 
-init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL) {
+splitPlot <- function (idx, len) {
+  if (idx == 1) {
+    par(mfrow=c(len, 1))
+  } else {
+    #par()
+  }
+}
+
+splitPlots <- function (dataset, do_plot) {
+  if (length(dataset) == 0 || is.null(dataset[[1]])) {
+    return ()
+  } 
+  
+  for (i in 1:length(dataset)) {
+    namedata = dataset[[i]]
+    
+    splitPlot(i, length(dataset))
+    
+    do_plot(namedata[[1]], namedata[[2]])
+  }
+}
+
+init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL, name=NULL) {
   if (new) {
     plot.new()
   } else {
@@ -18,11 +40,16 @@ init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL) {
     mtext (legend, 2, line=3)
   }
   
+  if (!is.null(name)) {
+    title (name)
+  }
+  
   box()
 }
 
 # plot_summary(meteoData$Grenoble.csv)
-plot_summary = function (data) {
+plot_summary = function (name, data, options) {
+  
   #--Define plot titles:
   lab.bar <-  "Air pressure (hpa)"
   lab.hum <-  "Humidity (%)"
@@ -67,7 +94,7 @@ plot_summary = function (data) {
                                                  lty=2, col=col.lm, lwd=1) # median value
          },
          key=list(text=list(c("raw data", "smoothed curve", "median value")),
-                  title="Weather around Grenoble",
+                  title=paste("Weather around", name),
                   col=c(col.raw, col.smo, col.lm), lty=c(1, 1, 2),
                   columns=2, cex=0.95,
                   lines=TRUE
@@ -75,20 +102,17 @@ plot_summary = function (data) {
   )
 }
 
-plot_pluie = function (dates, pluie, options) {  
+plot_pluie = function (name, dates, pluie, options) {  
   size <- length(dates)
   
-  if (options$with_mean) {
-	  meanPluie <- mean(pluie)
-  }
-  
-  init_graph(xlim=c(0, size),  ylim=c(0, max(pluie)), legend='Precipitations (mm)')
+  init_graph(xlim=c(0, size),  ylim=c(0, max(pluie)), legend='Precipitations (mm)', name=name)
   
   if (options$with_daily) {
     lines(pluie, xaxt = "n",  type='h', lwd=2, lend=4, col='blue')
   }
   
   if (options$with_reg) {
+    meanPluie <- mean(pluie)
     add_regression_curve(pluie, "red", options$reg_coeff)
   }
   
@@ -105,13 +129,13 @@ plot_pluie = function (dates, pluie, options) {
   }  
 }
 
-plot_hygro = function(dates, hygro, options) {  
+plot_hygro = function(name, dates, hygro, options) {  
   size <- length(dates)
   
 	meanHygro <- mean(hygro)  
 	hygroRange <- range(hygro)
 	
-  init_graph(xlim=c(0, size),  ylim=c(min(hygroRange), 100), legend='Hygro (%)')
+  init_graph(xlim=c(0, size),  ylim=c(min(hygroRange), 100), legend='Hygro (%)', name=name)
   
   if (options$with_daily) {
 	  lines(seq(0.5, size-0.5, 1), hygro, col="seagreen4")
@@ -128,7 +152,7 @@ plot_hygro = function(dates, hygro, options) {
 	box()
 }
 
-plot_temp = function(dates, max, min, options) {
+plot_temp = function(name, dates, max, min, options) {
   size <- length(dates)
   
 	tempRange <- c(min(0, min(min)), max(max, 35))
@@ -136,7 +160,7 @@ plot_temp = function(dates, max, min, options) {
 	meanMax <- mean(max)
 	meanMin <- mean(min)
 
-  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (°C)')
+  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (°C)', name=name)
   
   if (options$with_max) {
     if (options$with_daily) {
@@ -184,13 +208,13 @@ plot_temp = function(dates, max, min, options) {
   }
   
   if (options$with_zero) {
-    abline(h=0, col="black", lty=2)
+    abline(h=0, col="black", lty=3)
   }
   
 	box()
 }
 
-plot_pression = function(dates, pression, options) {
+plot_pression = function(name, dates, pression, options) {
   size <- length(dates)
   
 	pressionRange <- range(pression) 
@@ -199,7 +223,7 @@ plot_pression = function(dates, pression, options) {
   
 	meanPression <- mean(pression)
 
-  init_graph(xlim=c(0, size),  ylim=pressionRange, legend='Pression (hPa)')
+  init_graph(xlim=c(0, size),  ylim=pressionRange, legend='Pression (hPa)', name=name)
   
   if (options$with_daily) {
 	  lines(seq(0.5, size-0.5, 1), pression, col="orange3")

@@ -41,10 +41,7 @@ shinyServer(function(input, output) {
       
       splitPlot(i, length(dataset))
       
-      plot_pluie(data$Date, data$Pluie, 
-                 input$opt_daily, input$average, 
-                 input$opt_rain_cumul,
-                 input$regression, input$reg_adjust)
+      plot_pluie(data$Date, data$Pluie, input)
     }
   })
   
@@ -60,9 +57,7 @@ shinyServer(function(input, output) {
       
       splitPlot(i, length(dataset))
       
-      plot_hygro(data$Date, data$Hygrometrie, 
-                 input$opt_daily,  input$average,
-                 input$regression, input$reg_adjust)
+      plot_hygro(data$Date, data$Hygrometrie, input)
     } 
   })
   
@@ -78,10 +73,7 @@ shinyServer(function(input, output) {
       
       splitPlot(i, length(dataset))
       
-      plot_temp(data$Date, data$Temp.max, data$Temp.min,  
-                input$opt_daily, input$average, 
-                input$opt_temp_min, input$opt_temp_max, input$opt_temp_med,
-                input$regression, input$reg_adjust)
+      plot_temp(data$Date, data$Temp.max, data$Temp.min,  input)
     }
   })
   
@@ -97,9 +89,7 @@ shinyServer(function(input, output) {
       
       splitPlot(i, length(dataset))
       
-      plot_pression(data$Date, data$Pression,  
-                    input$opt_daily, input$average, 
-                    input$regression, input$reg_adjust)
+      plot_pression(data$Date, data$Pression, input)
     }
   output$plot_summary <- reactivePlot(function() { plot_summary(data) })
   })

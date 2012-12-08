@@ -16,31 +16,32 @@ shinyUI(pageWithSidebar(
     ),
     wellPanel(
       p(strong("How")),
-        checkboxInput(inputId = "average",
+        checkboxInput(inputId = "with_mean",
                     label = strong("Show average"),
                     value = FALSE),
-        checkboxInput(inputId = "regression",
+        checkboxInput(inputId = "with_reg",
                     label = strong("Show regression curve"),
                     value = TRUE),
-        conditionalPanel(condition = "input.regression == true",
-                         sliderInput(inputId = "reg_adjust",
+        conditionalPanel(condition = "input.with_reg == true",
+                         sliderInput(inputId = "reg_coeff",
                                      label = "Regression adjustment:",
                                      min=0, max=1, value=0.35, step=0.2),
-                         checkboxInput(inputId = "opt_daily", label = "Daily values", value = TRUE)
+                         checkboxInput(inputId = "with_daily", label = "Daily values", value = TRUE)
         )
       ),
       conditionalPanel(condition = "input.what_minimax == true",
                        wellPanel(
                          p(strong("Temperature options")),
-                         checkboxInput(inputId = "opt_temp_max", label = "Maximal temperature", value = TRUE),
-                         checkboxInput(inputId = "opt_temp_med", label = "Average temperature", value = FALSE),
-                         checkboxInput(inputId = "opt_temp_min", label = "Minimal temperature", value = FALSE)
+                         checkboxInput(inputId = "with_max", label = "Maximal temperature", value = TRUE),
+                         checkboxInput(inputId = "with_med", label = "Average temperature", value = FALSE),
+                         checkboxInput(inputId = "with_min", label = "Minimal temperature", value = TRUE),
+                         checkboxInput(inputId = "with_zero", label = "With zero", value = TRUE)
                        )
       ),
       conditionalPanel(condition = "input.what_rain == true",
                        wellPanel(
                          p(strong("Rainfall options")),
-                         checkboxInput(inputId = "opt_rain_cumul", label = "Cumulative curve", value = TRUE)
+                         checkboxInput(inputId = "with_cumul", label = "Cumulative curve", value = TRUE)
                        )
       )
     ),

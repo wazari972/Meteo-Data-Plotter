@@ -26,23 +26,174 @@ splitPlots <- function (dataset, do_plot) {
   }
 }
 
-init_graph = function (dates, ylim, axe=2, new=TRUE, legend=NULL, name=NULL) {
-  if (new) {
-    plot.new()
-  } else {
-    par(new=TRUE)
-  }
-  
-  xlim <- range(dates)
-  plot.window(xlim,  ylim, xaxs='i', yaxs='i')
-  axis (axe)
-  
-  if (!is.null(legend)) {
-    mtext (legend, 2, line=3)
-  }
-  
+add_legends = function (axe=2, legend=NULL, name=NULL) {
   if (!is.null(name)) {
     title (name)
+  }
+  
+  if (!is.null(legend)) {
+    mtext (legend, axe, line=3)
+  }
+  
+  box()
+}
+
+set_axes <- function (dates, ylim=NULL, yaxe=2) {  
+  # Some date arithmetics
+  all_days <- seq.Date( from=min(dates), to=max(dates), by=1 )
+  months  <- all_days[ format(all_days, "%d") == "01" ]
+  january <- all_days[ format(all_days, "%m-%d") == "01-01" ]
+  april   <- all_days[ format(all_days, "%m-%d") == "04-01" ]
+  july    <- all_days[ format(all_days, "%m-%d") == "07-01" ]
+  october <- all_days[ format(all_days, "%m-%d") == "10-01" ]
+  
+  # Finally plot the axes
+  axis.Date(1, at=months,  label=FALSE, tcl=-.3) 
+  axis.Date(1, at=january, label=format(january, "%Y"))
+  axis.Date(1, at=april,   label=format(april,   "%b"))
+  axis.Date(1, at=july,    label=format(july,    "%b"))
+  axis.Date(1, at=october, label=format(october, "%b"))
+  
+  
+  if (!is.null(ylim)) {
+    axis(yaxe, ylim)
+  }
+}
+
+init_graph <- function (xlim, ylim, axe=2) {
+    par(new=TRUE)
+    
+    plot.window(xlim, ylim)
+    axis (axe)
+}
+
+
+plot_pluie = function (name, dates, pluie, options) {
+  bad<-ifelse(pluie > options$rainthreshold, "blue","cornflowerblue")
+  
+  plot(dates, pluie,  type=ifelse (options$with_daily, 'h', 'n'),
+       col=bad, xaxt='n', xlab="", ylab="")
+  
+  set_axes(dates, c(0, max(pluie)))
+  
+  if (options$with_reg) {
+    add_regression_curve(dates, pluie, ifelse(options$with_daily, "purple", "blue"), options$reg_coeff)
+  }
+  
+  if (options$with_mean) {
+    meanPluie <- mean(pluie)
+    abline(h=meanPluie, col="blue", lty=2)
+  }
+  
+  if (options$with_cumul) {
+    cumuled <- cumul(pluie)
+    init_graph(range(dates), ylim=c(0, cumuled[length(pluie)]), axe=4)
+    
+    lines(dates, cumuled, col="blue")
+  } 
+  
+  add_legends(legend='Precipitations (mm)', name=name)
+}
+
+plot_hygro = function(name, dates, hygro, options) {  
+  plot(dates, hygro, col="seagreen4", type=ifelse (options$with_daily, 'l', 'n'),
+       xaxt='n', xlab="", ylab="")
+  
+  set_axes(dates,  c(min(hygro, 0), 100))
+  
+  axis(side=1, at=1:length(dates), labels=strftime(dates, format="%b"), las=1)
+  add_legends(legend='Hygro (%)', name=name)
+  
+  if (options$with_mean) {
+    meanHygro <- mean(hygro)  
+	  abline(h=meanHygro, col="seagreen4", lty=2)
+  }
+  
+  if (options$with_reg) {
+    add_regression_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
+  }
+  
+	box()
+}
+
+plot_temp = function(name, dates, max, min, options) {
+  temp_range <- range(min, max)
+  
+  plot(dates, max, col="tomato2", type='n',
+      xaxt='n', xlab="", ylab="", ylim=temp_range)
+  
+  add_legends(legend='Temp (C)', name=name)    
+  set_axes(dates)
+  
+  if (options$with_max) {
+    if (options$with_daily) {
+      lines (dates, max, col="tomato2")
+    }
+	  
+    if (options$with_reg) {
+	    add_regression_curve(dates, max, ifelse(options$with_daily, "royalblue", "tomato2"), options$reg_coeff)
+    }
+    
+    if (options$with_mean) {
+      meanMax <- mean(max)
+	    abline(h=meanMax, col="tomato2", lty=2)
+    }
+  }
+  
+  if (options$with_min) {
+    if (options$with_daily) {
+      lines (dates, min, col="royalblue")
+    }
+    
+	  if (options$with_reg) {
+	    add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$reg_coeff)
+	  }
+    
+    if (options$with_mean) {
+      meanMin <- mean(min)
+	    abline(h=meanMin, col="royalblue", lty=2)
+    }
+  }
+  
+  if (options$with_med) {
+    medium <- get_med(min, max)
+    
+    if (options$with_daily) {
+      lines (dates, medium, col="seagreen4")
+    }
+    
+    if (options$with_reg) {
+      add_regression_curve(dates, medium, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
+    }
+    
+    if (options$with_mean) {
+      meanMed <- mean(medium)
+      abline(h=meanMed, col="seagreen4", lty=2)
+    }
+  }
+  
+  if (options$with_zero) {
+    abline(h=0, col="black", lty=3)
+  }
+  
+	box()
+}
+
+plot_pression = function(name, dates, pression, options) {
+  plot(dates, pression, col="orange3", type=ifelse (options$with_daily, 'l', 'n'),
+       xaxt='n', xlab="", ylab="")
+  
+  set_axes(dates)
+  
+  add_legends(legend='Pression (hPa)', name=name)
+  
+  if (options$with_mean) {
+    meanPression <- mean(pression)
+	  abline(h=meanPression, col="orange3",lty=2)
+  }
+  
+  if (options$with_reg) {
+    add_regression_curve(dates, pression, ifelse(options$with_daily, "purple", "orange3"), options$reg_coeff)
   }
   
   box()
@@ -58,7 +209,7 @@ plot_summary = function (name, data, options) {
                                                degree*C, ")") ))
   lab.T.max <- as.expression(expression( paste("Maximum temperature (",
                                                degree*C, ")") ))
-
+  
   
   #--Custom strip function:
   # (NB the colour used is the default lattice strip background colour)
@@ -102,145 +253,6 @@ plot_summary = function (name, data, options) {
   )
 }
 
-plot_pluie = function (name, dates, pluie, options) {  
-  size <- length(dates)
-  
-  init_graph(dates, ylim=c(0, max(pluie)), legend='Precipitations (mm)', name=name)
-  
-  if (options$with_daily) {
-    bad<-ifelse(pluie > options$rainthreshold, "blue","cornflowerblue")
-    lines(dates, pluie,  type='h', lwd=2, col=bad)
-  }
-  
-  axis(1)
-  
-  if (options$with_reg) {
-    add_regression_curve(dates, pluie, "red", options$reg_coeff)
-  }
-  if (options$with_mean) {
-    meanPluie <- mean(pluie)
-    abline(h=meanPluie, col="blue", lty=2)
-  }
-  
-  if (options$with_cumul) {
-    cumuled <- cumul(pluie)    
-    par(new=TRUE)
-    init_graph(dates, ylim=c(0, cumuled[length(pluie)]), axe=4, new=TRUE)
-    
-    lines(dates, cumuled, col="blue")
-  }  
-}
-
-plot_hygro = function(name, dates, hygro, options) {  
-  size <- length(dates)
-  
-	meanHygro <- mean(hygro)  
-	hygroRange <- range(hygro)
-	
-  init_graph(xlim=c(0, size),  ylim=c(min(hygroRange), 100), legend='Hygro (%)', name=name)
-  
-  if (options$with_daily) {
-	  lines(seq(0.5, size-0.5, 1), hygro, col="seagreen4")
-  }
-  
-  if (options$with_mean) {
-	  abline(h=meanHygro, col="seagreen4", lty=2)
-  }
-  
-  if (options$with_reg) {
-    add_regression_curve(hygro, "purple", options$reg_coeff)
-  }
-  
-	box()
-}
-
-plot_temp = function(name, dates, max, min, options) {
-  size <- length(dates)
-  
-	tempRange <- c(min(0, min(min)), max(max, 35))
-
-	meanMax <- mean(max)
-	meanMin <- mean(min)
-
-  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (C)', name=name)
-  
-  if (options$with_max) {
-    if (options$with_daily) {
-	    lines (seq(0.5, size-0.5, 1), max, col="tomato2")
-    }
-	  
-    if (options$with_reg) {
-	    add_regression_curve(max, "royalblue", options$reg_coeff)
-    }
-    
-    if (options$with_mean) {
-	    abline(h=meanMax, col="tomato2", lty=2)
-    }
-  }
-  
-  if (options$with_min) {
-    if (options$with_daily) {
-	    lines (seq(0.5, size-0.5, 1), min, col="royalblue")
-    }
-    
-	  if (options$with_reg) {
-	    add_regression_curve(min, "tomato2", options$reg_coeff)
-	  }
-    
-    if (options$with_mean) {
-	    abline(h=meanMin, col="royalblue", lty=2)
-    }
-  }
-  
-  if (options$with_med) {
-    medium <- get_med(min, max)
-    
-    if (options$with_daily) {
-	    lines (seq(0.5, size-0.5, 1), medium, col="seagreen4")
-    }
-    
-    if (options$with_reg) {
-      add_regression_curve(medium, "purple", options$reg_coeff)
-    }
-    
-    if (options$with_mean) {
-      meanMed <- mean(medium)
-      abline(h=meanMed, col="seagreen4", lty=2)
-    }
-  }
-  
-  if (options$with_zero) {
-    abline(h=0, col="black", lty=3)
-  }
-  
-	box()
-}
-
-plot_pression = function(name, dates, pression, options) {
-  size <- length(dates)
-  
-	pressionRange <- range(pression) 
-  pressionRange[1] <- pressionRange[1] - 1
-  pressionRange[2] <- pressionRange[2] + 1
-  
-	meanPression <- mean(pression)
-
-  init_graph(xlim=c(0, size),  ylim=pressionRange, legend='Pression (hPa)', name=name)
-  
-  if (options$with_daily) {
-	  lines(seq(0.5, size-0.5, 1), pression, col="orange3")
-  }
-  
-  if (options$with_mean) {
-	  abline(h=meanPression, col="orange3",lty=2)
-  }
-  
-  if (options$with_reg) {
-    add_regression_curve(pression, "purple", options$reg_coeff)
-  }
-  
-  box()
-}
 
 add_regression_curve = function(dates, data, color, coeff) {
   curve <- smooth.spline(dates, data, spar=coeff)

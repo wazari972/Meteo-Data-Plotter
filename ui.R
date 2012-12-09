@@ -8,9 +8,9 @@ shinyUI(pageWithSidebar(
     ),
     wellPanel(
       p(strong("What")),
-      checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = FALSE),
+      checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = TRUE),
       checkboxInput(inputId = "what_rain", label = "Rainfall", value = FALSE),
-      checkboxInput(inputId = "what_pressure", label = "Pressure", value = TRUE),
+      checkboxInput(inputId = "what_pressure", label = "Pressure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE),
       checkboxInput(inputId = "what_summary", label = "Summary", value = FALSE)
     ),
@@ -21,7 +21,7 @@ shinyUI(pageWithSidebar(
                     value = FALSE),
         checkboxInput(inputId = "with_reg",
                     label = strong("Show regression curve"),
-                    value = TRUE),
+                    value = FALSE),
         conditionalPanel(condition = "input.with_reg == true",
                          sliderInput(inputId = "reg_coeff",
                                      label = "Regression adjustment:",

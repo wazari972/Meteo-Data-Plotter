@@ -26,13 +26,14 @@ splitPlots <- function (dataset, do_plot) {
   }
 }
 
-init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL, name=NULL) {
+init_graph = function (dates, ylim, axe=2, new=TRUE, legend=NULL, name=NULL) {
   if (new) {
     plot.new()
   } else {
     par(new=TRUE)
   }
   
+  xlim <- range(dates)
   plot.window(xlim,  ylim, xaxs='i', yaxs='i')
   axis (axe)
   
@@ -47,7 +48,6 @@ init_graph = function (xlim, ylim, axe=2, new=TRUE, legend=NULL, name=NULL) {
   box()
 }
 
-# plot_summary(meteoData$Grenoble.csv)
 plot_summary = function (name, data, options) {
   
   #--Define plot titles:
@@ -105,27 +105,29 @@ plot_summary = function (name, data, options) {
 plot_pluie = function (name, dates, pluie, options) {  
   size <- length(dates)
   
-  init_graph(xlim=c(0, size),  ylim=c(0, max(pluie)), legend='Precipitations (mm)', name=name)
+  init_graph(dates, ylim=c(0, max(pluie)), legend='Precipitations (mm)', name=name)
   
   if (options$with_daily) {
-    lines(pluie, xaxt = "n",  type='h', lwd=2, lend=4, col='blue')
+    bad<-ifelse(pluie > 15, "blue","cornflowerblue")
+    lines(dates, pluie,  type='h', lwd=2, col=bad)
   }
+  
+  axis(1)
   
   if (options$with_reg) {
-    meanPluie <- mean(pluie)
-    add_regression_curve(pluie, "red", options$reg_coeff)
+    add_regression_curve(dates, pluie, "red", options$reg_coeff)
   }
-  
   if (options$with_mean) {
+    meanPluie <- mean(pluie)
     abline(h=meanPluie, col="blue", lty=2)
   }
   
   if (options$with_cumul) {
     cumuled <- cumul(pluie)    
     par(new=TRUE)
-    init_graph(xlim=c(0, size),  ylim=c(0, cumuled[length(pluie)]), axe=4, new=TRUE)
+    init_graph(dates, ylim=c(0, cumuled[length(pluie)]), axe=4, new=TRUE)
     
-    lines(cumuled, col="darkblue")
+    lines(dates, cumuled, col="blue")
   }  
 }
 
@@ -160,7 +162,7 @@ plot_temp = function(name, dates, max, min, options) {
 	meanMax <- mean(max)
 	meanMin <- mean(min)
 
-  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (°C)', name=name)
+  init_graph(xlim=c(0, size),  ylim=tempRange, legend='Temp (C)', name=name)
   
   if (options$with_max) {
     if (options$with_daily) {
@@ -240,8 +242,10 @@ plot_pression = function(name, dates, pression, options) {
   box()
 }
 
-add_regression_curve = function(data, color, coeff) {
-  curve <- smooth.spline(data, spar=coeff)
+add_regression_curve = function(dates, data, color, coeff) {
+  curve <- smooth.spline(dates, data, spar=coeff)
   lines(curve, col=color)
   return(curve)
 }
+
+source("startStandalone.R")

@@ -89,8 +89,9 @@ complete = function(lst, val, totalLength){
 }
 
 fix_data = function(data) {
-  data$Date <- as.Date(data$Date, format="%d/%m/%Y")
   size <- length(data$Date)
+  
+  data$Date <- as.Date(data$Date, format="%d/%m/%Y")
   
   data$Pluie <- fill_gaps_zero(data$Pluie)
   data$Pluie <- complete(data$Pluie, 0, size)

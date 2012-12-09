@@ -41,7 +41,8 @@ shinyUI(pageWithSidebar(
       conditionalPanel(condition = "input.what_rain == true",
                        wellPanel(
                          p(strong("Rainfall options")),
-                         checkboxInput(inputId = "with_cumul", label = "Cumulative curve", value = TRUE)
+                         checkboxInput(inputId = "with_cumul", label = "Cumulative curve", value = TRUE),
+                         numericInput("rainthreshold", "High rainfall threshold (in mm)", 10)
                        )
       )
     ),

@@ -108,7 +108,7 @@ plot_pluie = function (name, dates, pluie, options) {
   init_graph(dates, ylim=c(0, max(pluie)), legend='Precipitations (mm)', name=name)
   
   if (options$with_daily) {
-    bad<-ifelse(pluie > 15, "blue","cornflowerblue")
+    bad<-ifelse(pluie > options$rainthreshold, "blue","cornflowerblue")
     lines(dates, pluie,  type='h', lwd=2, col=bad)
   }
   

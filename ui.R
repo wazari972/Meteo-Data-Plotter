@@ -8,8 +8,8 @@ shinyUI(pageWithSidebar(
     ),
     wellPanel(
       p(strong("What")),
-      checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = TRUE),
-      checkboxInput(inputId = "what_rain", label = "Rainfall", value = FALSE),
+      checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = FALSE),
+      checkboxInput(inputId = "what_rain", label = "Rainfall", value = TRUE),
       checkboxInput(inputId = "what_pressure", label = "Pressure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE),
       checkboxInput(inputId = "what_summary", label = "Summary", value = FALSE)
@@ -42,7 +42,7 @@ shinyUI(pageWithSidebar(
                        wellPanel(
                          p(strong("Rainfall options")),
                          checkboxInput(inputId = "with_cumul", label = "Cumulative curve", value = TRUE),
-                         numericInput("rainthreshold", "High rainfall threshold (in mm)", 10)
+                         uiOutput("rainthreshold")
                        )
       )
     ),

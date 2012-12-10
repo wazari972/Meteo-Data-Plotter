@@ -2,6 +2,24 @@ source("plot.R")
 source("config.R")
 
 shinyServer(function (input, output) {
+  output$location_selector <- reactiveUI(function() {
+    checkboxGroupInput(inputId = "location",
+                       label = "Location:",
+                       choices = ls(meteoData))
+  })
+  
+  output$rainthreshold <- reactiveUI(function() {
+    max <- environment()
+    max$Rain <- 1
+    
+    iterateDataset(selectedDataset(), function(idx, name, data) {
+      max$Rain <- max(max$Rain, data$Pluie)
+    })
+    current <- ifelse(is.null(input$rainthreshold), 0, min(max$Rain, input$rainthreshold))
+    
+    sliderInput("rainthreshold", "High rainfall threshold (in mm)", min=0, max=max$Rain, value=current)
+  })
+  
   selectedDataset <- reactive(function () {
     ret = list(NULL)
     
@@ -13,13 +31,7 @@ shinyServer(function (input, output) {
     }
     
     return (ret)
-  })
-  
-  output$location_selector <- reactiveUI(function() {
-    checkboxGroupInput(inputId = "location",
-                label = "Location:",
-                choices = ls(meteoData))
-  })
+  })  
   
   output$plot_rain <- reactivePlot(function() {
     splitPlots(selectedDataset(), function(name, data) {

@@ -12,7 +12,7 @@ splitPlot <- function (idx, len) {
   }
 }
 
-splitPlots <- function (dataset, do_plot) {
+iterateDataset <- function(dataset, do_fct) {
   if (length(dataset) == 0 || is.null(dataset[[1]])) {
     return ()
   } 
@@ -20,10 +20,15 @@ splitPlots <- function (dataset, do_plot) {
   for (i in 1:length(dataset)) {
     namedata = dataset[[i]]
     
-    splitPlot(i, length(dataset))
-    
-    do_plot(namedata[[1]], namedata[[2]])
+    do_fct(i, namedata[[1]], namedata[[2]])
   }
+}
+
+splitPlots <- function (dataset, do_plot) {
+  iterateDataset(dataset, function(idx, name, data) {
+    splitPlot(idx, length(dataset))
+    do_plot(name, data)
+  })
 }
 
 add_legends = function (axe=2, legend=NULL, name=NULL) {
@@ -67,12 +72,13 @@ init_graph <- function (xlim, ylim, axe=2) {
     axis (axe)
 }
 
-
 plot_pluie = function (name, dates, pluie, options) {
   bad<-ifelse(pluie > options$rainthreshold, "blue","cornflowerblue")
   
   plot(dates, pluie,  type=ifelse (options$with_daily, 'h', 'n'),
        col=bad, xaxt='n', xlab="", ylab="")
+  
+  abline(h=options$rainthreshold, col="cornflowerblue", lwd=0.3)
   
   set_axes(dates, c(0, max(pluie)))
   
@@ -259,5 +265,3 @@ add_regression_curve = function(dates, data, color, coeff) {
   lines(curve, col=color)
   return(curve)
 }
-
-source("startStandalone.R")

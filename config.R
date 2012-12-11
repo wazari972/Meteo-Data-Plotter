@@ -8,3 +8,16 @@ for (i in 1:length(files)) {
   
   meteoData[[filename]] <- fix_data(data)
 }
+
+getDatasets <- function (filenames) {
+  ret = list(NULL)
+  
+  if (length(filenames) == 0)
+    return (ret)
+  
+  for(i in 1:length(filenames)) {
+    ret[[i]] <- list(filenames[i], meteoData[[filenames[i]]])
+  }
+  
+  return (ret)
+}

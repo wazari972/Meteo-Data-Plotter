@@ -20,46 +20,47 @@ shinyServer(function (input, output) {
     sliderInput("rainthreshold", "High rainfall threshold (in mm)", min=0, max=max$Rain, value=current)
   })
   
-  selectedDataset <- reactive(function () {
-    ret = list(NULL)
+  getVarHeight <- function() {
+    return(getFixHeight(length(selectedDataset())))
+  }
+  
+  getFixHeight <- function(nbPlots) {
+    HEIGTH = 400
     
-    if (length(input$location) == 0)
-      return (ret)
-    
-    for(i in 1:length(input$location)) {
-      ret[[i]] <- list(input$location[i], meteoData[[input$location[i]]])
-    }
-    
-    return (ret)
-  })  
+    return (HEIGTH*nbPlots)
+  }
+  
+  selectedDataset <- reactive(function() {
+    return (getDatasets(input$location))
+  })
   
   output$plot_rain <- reactivePlot(function() {
     splitPlots(selectedDataset(), function(name, data) {
       plot_pluie(name, data$Date, data$Pluie, input)
     })
-  })
+  }, height=getVarHeight)
   
   output$plot_humid <- reactivePlot(function() { 
     splitPlots(selectedDataset(), function(name, data) {
       plot_hygro(name, data$Date, data$Hygrometrie, input)
     })
-  })
+  }, height=getVarHeight)
   
   output$plot_minimax <- reactivePlot(function() { 
     splitPlots(selectedDataset(), function(name, data) {
       plot_temp(name, data$Date, data$Temp.max, data$Temp.min,  input)
     })
-  })
+  }, height=getVarHeight)
   
   output$plot_pressure <- reactivePlot(function() {
     splitPlots(selectedDataset(), function(name, data) {
       plot_pression(name, data$Date, data$Pression, input)
     })
-  })
+  }, height=getVarHeight)
                                        
   output$plot_summary <- reactivePlot(function() { 
     splitPlots(selectedDataset(), function(name, data) {
       plot_summary(name, data, input) 
     })
-  })
+  }, height=getFixHeight(4))
 })

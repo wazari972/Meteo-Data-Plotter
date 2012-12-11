@@ -19,12 +19,12 @@ shinyUI(pageWithSidebar(
         checkboxInput(inputId = "with_mean",
                     label = strong("Show average"),
                     value = FALSE),
-        checkboxInput(inputId = "with_reg",
-                    label = strong("Show regression curve"),
+        checkboxInput(inputId = "with_smooth",
+                    label = strong("Show smooth curve"),
                     value = FALSE),
-        conditionalPanel(condition = "input.with_reg == true",
-                         sliderInput(inputId = "reg_coeff",
-                                     label = "Regression adjustment:",
+        conditionalPanel(condition = "input.with_smooth == true",
+                         sliderInput(inputId = "smooth_coeff",
+                                     label = "Smoothness adjustment:",
                                      min=0, max=1, value=0.35, step=0.2),
                          checkboxInput(inputId = "with_daily", label = "Daily values", value = TRUE)
         )
@@ -57,6 +57,6 @@ shinyUI(pageWithSidebar(
     conditionalPanel(condition = "input.what_humid",
         plotOutput(outputId = "plot_humid")),
     conditionalPanel(condition = "input.what_summary",
-                     plotOutput(outputId = "plot_summary", height = "400px"))
+                     plotOutput(outputId = "plot_summary"))
   )
 ))

@@ -78,12 +78,14 @@ plot_pluie = function (name, dates, pluie, options) {
   plot(dates, pluie,  type=ifelse (options$with_daily, 'h', 'n'),
        col=bad, xaxt='n', xlab="", ylab="")
   
-  abline(h=options$rainthreshold, col="cornflowerblue", lwd=0.3)
+  if (options$with_daily) {
+    abline(h=options$rainthreshold, col="cornflowerblue", lwd=0.3)
+  }
   
   set_axes(dates, c(0, max(pluie)))
   
-  if (options$with_reg) {
-    add_regression_curve(dates, pluie, ifelse(options$with_daily, "purple", "blue"), options$reg_coeff)
+  if (options$with_smooth) {
+    add_regression_curve(dates, pluie, ifelse(options$with_daily, "purple", "blue"), options$smooth_coeff)
   }
   
   if (options$with_mean) {
@@ -115,8 +117,8 @@ plot_hygro = function(name, dates, hygro, options) {
 	  abline(h=meanHygro, col="seagreen4", lty=2)
   }
   
-  if (options$with_reg) {
-    add_regression_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
+  if (options$with_smooth) {
+    add_smooth_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
   }
   
 	box()
@@ -136,7 +138,7 @@ plot_temp = function(name, dates, max, min, options) {
       lines (dates, max, col="tomato2")
     }
 	  
-    if (options$with_reg) {
+    if (options$with_smooth) {
 	    add_regression_curve(dates, max, ifelse(options$with_daily, "royalblue", "tomato2"), options$reg_coeff)
     }
     
@@ -151,7 +153,7 @@ plot_temp = function(name, dates, max, min, options) {
       lines (dates, min, col="royalblue")
     }
     
-	  if (options$with_reg) {
+	  if (options$with_smooth) {
 	    add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$reg_coeff)
 	  }
     
@@ -168,7 +170,7 @@ plot_temp = function(name, dates, max, min, options) {
       lines (dates, medium, col="seagreen4")
     }
     
-    if (options$with_reg) {
+    if (options$with_smooth) {
       add_regression_curve(dates, medium, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
     }
     
@@ -198,7 +200,7 @@ plot_pression = function(name, dates, pression, options) {
 	  abline(h=meanPression, col="orange3",lty=2)
   }
   
-  if (options$with_reg) {
+  if (options$with_smooth) {
     add_regression_curve(dates, pression, ifelse(options$with_daily, "purple", "orange3"), options$reg_coeff)
   }
   
@@ -206,57 +208,21 @@ plot_pression = function(name, dates, pression, options) {
 }
 
 plot_summary = function (name, data, options) {
+  plots = c(function() {
+    plot_pluie(name, data$Date, data$Pluie, options)
+  }, function() {
+    plot_hygro(name, data$Date, data$Hygrometrie, options)
+  }, function() {
+    plot_temp(name, data$Date, data$Temp.max, data$Temp.min,  options)
+  }, function() {
+    plot_pression(name, data$Date, data$Pression, options)
+  })
   
-  #--Define plot titles:
-  lab.bar <-  "Air pressure (hpa)"
-  lab.hum <-  "Humidity (%)"
-  lab.rain <- "Rainfall (mm/day)"
-  lab.T.min <- as.expression(expression( paste("Minimum temperature (",
-                                               degree*C, ")") ))
-  lab.T.max <- as.expression(expression( paste("Maximum temperature (",
-                                               degree*C, ")") ))
-  
-  
-  #--Custom strip function:
-  # (NB the colour used is the default lattice strip background colour)
-  my.strip <- function(which.given, which.panel, ...) {
-    strip.labels <- c(lab.T.min, lab.T.max, lab.rain, lab.hum, lab.bar)
-    panel.rect(0, 0, 1, 1, col="#ffe5cc", border=1)
-    panel.text(x=0.5, y=0.5, adj=c(0.5, 0.55), cex=0.95,
-               lab=strip.labels[which.panel[which.given]])
+  nb_plots <- length(plots)
+  for (idx in 1:nb_plots) {
+    splitPlot(idx, nb_plots)
+    plots[idx][[1]]()
   }
-  
-  #--Define X axis date range:
-  xlim <- range(data$Date)
-  
-  #--Define annual quarters for plot grid line markers:
-  d <- seq(from=xlim[1], to=xlim[2], by=365/4)
-  
-  #--Define colours for raw & smoothed data:
-  col.raw <- "#377EB8"    #colset[2] } see note above
-  col.smo <- "#E41A1C"    #colset[1] }
-  col.lm <- "grey20"
-  
-  #--Create multipanel plot:
-  xyplot(Temp.min + Temp.max + Pluie + Hygrometrie + Pression ~ Date, data=data,
-         scales=list(y="free", rot=0), xlim=xlim,
-         strip=my.strip, outer=TRUE, layout=c(1, 5, 1), ylab="",
-         panel=function(x, y, ...) {panel.grid(h=-1, v=0) # plot default horizontal gridlines
-                                    panel.abline(v=d, col="grey90") # custom vertical gridlines
-                                    panel.xyplot(x, y, ..., type="l",
-                                                 col=col.raw, lwd=0.5) # raw data
-                                    panel.loess(x, y, ..., col=col.smo,
-                                                span=0.14, lwd=0.5) # smoothed data
-                                    panel.abline(h=median(y, na.rm=TRUE),
-                                                 lty=2, col=col.lm, lwd=1) # median value
-         },
-         key=list(text=list(c("raw data", "smoothed curve", "median value")),
-                  title=paste("Weather around", name),
-                  col=c(col.raw, col.smo, col.lm), lty=c(1, 1, 2),
-                  columns=2, cex=0.95,
-                  lines=TRUE
-         ),
-  )
 }
 
 

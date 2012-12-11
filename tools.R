@@ -1,3 +1,15 @@
+iterateDataset <- function(dataset, do_fct) {
+  if (length(dataset) == 0 || is.null(dataset[[1]])) {
+    return ()
+  } 
+  
+  for (i in 1:length(dataset)) {
+    namedata = dataset[[i]]
+    
+    do_fct(i, namedata[[1]], namedata[[2]])
+  }
+}
+
 cumul = function(lst) {
   current <- lst[1]
   for (i in 2:length(lst)) {

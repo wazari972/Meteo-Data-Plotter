@@ -1,3 +1,4 @@
+source("print.R")
 source("plot.R")
 source("config.R")
 
@@ -25,8 +26,7 @@ shinyServer(function (input, output) {
   }
   
   getFixHeight <- function(nbPlots) {
-    HEIGTH = 400
-    
+    HEIGTH <- 400
     return (HEIGTH*nbPlots)
   }
   
@@ -63,4 +63,29 @@ shinyServer(function (input, output) {
       plot_summary(name, data, input) 
     })
   }, height=getFixHeight(4))
+  
+  
+  output$text_rain <- reactivePrint(function() {
+    iterateDataset(selectedDataset(), function(i, name, data) {
+      print_pluie(name, data$Date, data$Pluie, input)
+    })
+  })
+    
+  output$text_minimax <- reactivePrint(function() {
+    iterateDataset(selectedDataset(), function(i, name, data) {
+      print_temp(name, data$Date, data$Temp.max, data$Temp.min,  input)
+    })
+  })
+  
+  output$text_humid <- reactivePrint(function() {
+    iterateDataset(selectedDataset(), function(i, name, data) {
+      print_hygro(name, data$Date, data$Hygrometrie, input)
+    })
+  })
+  
+  output$text_pressure <- reactivePrint(function() {
+    iterateDataset(selectedDataset(), function(i, name, data) {
+      print_pression(name, data$Date, data$Pression, input)
+    })
+  })
 })

@@ -12,18 +12,6 @@ splitPlot <- function (idx, len) {
   }
 }
 
-iterateDataset <- function(dataset, do_fct) {
-  if (length(dataset) == 0 || is.null(dataset[[1]])) {
-    return ()
-  } 
-  
-  for (i in 1:length(dataset)) {
-    namedata = dataset[[i]]
-    
-    do_fct(i, namedata[[1]], namedata[[2]])
-  }
-}
-
 splitPlots <- function (dataset, do_plot) {
   iterateDataset(dataset, function(idx, name, data) {
     splitPlot(idx, length(dataset))
@@ -224,7 +212,6 @@ plot_summary = function (name, data, options) {
     plots[idx][[1]]()
   }
 }
-
 
 add_regression_curve = function(dates, data, color, coeff) {
   curve <- smooth.spline(dates, data, spar=coeff)

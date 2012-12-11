@@ -16,11 +16,13 @@ shinyUI(pageWithSidebar(
     ),
     wellPanel(
       p(strong("How")),
+        checkboxInput(inputId = "with_graph", label = "Show graphs", value = TRUE),
+        checkboxInput(inputId = "with_text", label = "Show facts", value = TRUE),
         checkboxInput(inputId = "with_mean",
-                    label = strong("Show average"),
+                    label = "Show average",
                     value = FALSE),
         checkboxInput(inputId = "with_smooth",
-                    label = strong("Show smooth curve"),
+                    label = "Show smooth curve",
                     value = FALSE),
         conditionalPanel(condition = "input.with_smooth == true",
                          sliderInput(inputId = "smooth_coeff",
@@ -49,14 +51,30 @@ shinyUI(pageWithSidebar(
 
   mainPanel(
     conditionalPanel(condition = "input.what_minimax",
-        plotOutput(outputId = "plot_minimax")),
+        conditionalPanel(condition = "input.with_graph",
+          plotOutput(outputId = "plot_minimax", height="100%")),
+        conditionalPanel(condition = "input.with_text", p(strong("Mini-max temperature")),
+                     verbatimTextOutput(outputId = "text_minimax"))),
+
     conditionalPanel(condition = "input.what_rain",
-        plotOutput(outputId = "plot_rain")),
+        conditionalPanel(condition = "input.with_graph",
+          plotOutput(outputId = "plot_rain", height="100%")),
+        conditionalPanel(condition = "input.with_text", p(strong("Rainfall")),
+                      verbatimTextOutput(outputId = "text_rain"))),
+    
     conditionalPanel(condition = "input.what_pressure",
-        plotOutput(outputId = "plot_pressure")),
+        conditionalPanel(condition = "input.with_graph",
+          plotOutput(outputId = "plot_pressure", height="100%")),
+        conditionalPanel(condition = "input.with_text", p(strong("Pressure")),
+                    verbatimTextOutput(outputId = "text_pressure"))),
+    
     conditionalPanel(condition = "input.what_humid",
-        plotOutput(outputId = "plot_humid")),
+        conditionalPanel(condition = "input.with_graph",
+          plotOutput(outputId = "plot_humid", height="100%")),
+        conditionalPanel(condition = "input.with_text", p(strong("Humidity")), 
+                         verbatimTextOutput(outputId = "text_humid"))),
+    
     conditionalPanel(condition = "input.what_summary",
-                     plotOutput(outputId = "plot_summary"))
+                     plotOutput(outputId = "plot_summary", height="100%"))
   )
 ))

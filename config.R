@@ -10,7 +10,7 @@ for (i in 1:length(files)) {
 }
 
 getDatasets <- function (filenames) {
-  ret = list(NULL)
+  ret = list()
   
   if (length(filenames) == 0)
     return (ret)

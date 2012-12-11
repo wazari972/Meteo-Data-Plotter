@@ -65,25 +65,26 @@ shinyServer(function (input, output) {
   }, height=getFixHeight(4))
   
   
-  output$text_rain <- reactivePrint(function() {
+  output$text_rain <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_pluie(name, data$Date, data$Pluie, input)
     })
   })
     
-  output$text_minimax <- reactivePrint(function() {
+  output$text_minimax <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_temp(name, data$Date, data$Temp.max, data$Temp.min,  input)
     })
   })
   
-  output$text_humid <- reactivePrint(function() {
+  output$text_humid <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_hygro(name, data$Date, data$Hygrometrie, input)
     })
+    cat("hello\n")
   })
   
-  output$text_pressure <- reactivePrint(function() {
+  output$text_pressure <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_pression(name, data$Date, data$Pression, input)
     })

@@ -106,7 +106,7 @@ plot_hygro = function(name, dates, hygro, options) {
   }
   
   if (options$with_smooth) {
-    add_smooth_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
+    add_smooth_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$smooth_coeff)
   }
   
 	box()
@@ -127,7 +127,7 @@ plot_temp = function(name, dates, max, min, options) {
     }
 	  
     if (options$with_smooth) {
-	    add_regression_curve(dates, max, ifelse(options$with_daily, "royalblue", "tomato2"), options$reg_coeff)
+	    add_regression_curve(dates, max, ifelse(options$with_daily, "royalblue", "tomato2"), options$smooth_coeff)
     }
     
     if (options$with_mean) {
@@ -142,7 +142,7 @@ plot_temp = function(name, dates, max, min, options) {
     }
     
 	  if (options$with_smooth) {
-	    add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$reg_coeff)
+	    add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$smooth_coeff)
 	  }
     
     if (options$with_mean) {
@@ -159,7 +159,7 @@ plot_temp = function(name, dates, max, min, options) {
     }
     
     if (options$with_smooth) {
-      add_regression_curve(dates, medium, ifelse(options$with_daily, "purple", "seagreen4"), options$reg_coeff)
+      add_regression_curve(dates, medium, ifelse(options$with_daily, "purple", "seagreen4"), options$smooth_coeff)
     }
     
     if (options$with_mean) {

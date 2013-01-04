@@ -81,7 +81,6 @@ shinyServer(function (input, output) {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_hygro(name, data$Date, data$Hygrometrie, input)
     })
-    cat("hello\n")
   })
   
   output$text_pressure <- reactiveText(function() {

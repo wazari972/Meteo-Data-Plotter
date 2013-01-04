@@ -4,8 +4,8 @@ source("config.R")
 input <- frame()
 input$with_mean <- TRUE
 input$with_daily <- TRUE
-input$with_reg <- FALSE
-input$reg_coeff <- 0.4
+input$with_smooth <- FALSE
+input$smooth_coeff <- 0.4
 
 input$with_cumul <- TRUE
 input$rainthreshold <- 20

@@ -67,6 +67,7 @@ shinyServer(function (input, output) {
   
   output$text_rain <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
+      p(strong(name)) #doesnt work this way
       print_pluie(name, data$Date, data$Pluie, input)
     })
   })

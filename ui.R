@@ -16,7 +16,7 @@ shinyUI(pageWithSidebar(
     ),
     wellPanel(
       p(strong("How")),
-        checkboxInput(inputId = "with_graph", label = "Show graphs", value = TRUE),
+        checkboxInput(inputId = "with_graph", label = "Show graphs", value = FALSE),
         checkboxInput(inputId = "with_text", label = "Show facts", value = TRUE),
         checkboxInput(inputId = "with_mean",
                     label = "Show average",
@@ -75,6 +75,7 @@ shinyUI(pageWithSidebar(
                          verbatimTextOutput(outputId = "text_humid"))),
     
     conditionalPanel(condition = "input.what_summary",
-                     plotOutput(outputId = "plot_summary", height="100%"))
+         conditionalPanel(condition = "input.with_graph",
+           plotOutput(outputId = "plot_summary", height="100%")))
   )
 ))

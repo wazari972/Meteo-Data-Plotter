@@ -106,7 +106,7 @@ plot_hygro = function(name, dates, hygro, options) {
   }
   
   if (options$with_smooth) {
-    add_smooth_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$smooth_coeff)
+    add_regression_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$smooth_coeff)
   }
   
 	box()

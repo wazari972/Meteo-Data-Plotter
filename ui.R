@@ -9,15 +9,16 @@ shinyUI(pageWithSidebar(
     wellPanel(
       p(strong("What")),
       checkboxInput(inputId = "what_minimax", label = "Mini-max temperature", value = FALSE),
-      checkboxInput(inputId = "what_rain", label = "Rainfall", value = TRUE),
+      checkboxInput(inputId = "what_rain", label = "Rainfall", value = FALSE),
       checkboxInput(inputId = "what_pressure", label = "Pressure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE),
-      checkboxInput(inputId = "what_summary", label = "Summary", value = FALSE)
+      checkboxInput(inputId = "what_summary", label = "Summary", value = FALSE),
+      checkboxInput(inputId = "what_hygro_temp", label = "Humidity/Temperature", value = TRUE)
     ),
     wellPanel(
       p(strong("How")),
-        checkboxInput(inputId = "with_graph", label = "Show graphs", value = FALSE),
-        checkboxInput(inputId = "with_text", label = "Show facts", value = TRUE),
+        checkboxInput(inputId = "with_graph", label = "Show graphs", value = TRUE),
+        checkboxInput(inputId = "with_text", label = "Show facts", value = FALSE),
         checkboxInput(inputId = "with_mean",
                     label = "Show average",
                     value = FALSE),
@@ -34,6 +35,15 @@ shinyUI(pageWithSidebar(
       conditionalPanel(condition = "input.what_minimax == true",
                        wellPanel(
                          p(strong("Temperature options")),
+                         checkboxInput(inputId = "with_max", label = "Maximal temperature", value = TRUE),
+                         checkboxInput(inputId = "with_med", label = "Average temperature", value = FALSE),
+                         checkboxInput(inputId = "with_min", label = "Minimal temperature", value = TRUE),
+                         checkboxInput(inputId = "with_zero", label = "With zero", value = TRUE)
+                       )
+      ),
+      conditionalPanel(condition = "input.what_hygro_temp == true",
+                       wellPanel(
+                         p(strong("Humidity vs Temperature options")),
                          checkboxInput(inputId = "with_max", label = "Maximal temperature", value = TRUE),
                          checkboxInput(inputId = "with_med", label = "Average temperature", value = FALSE),
                          checkboxInput(inputId = "with_min", label = "Minimal temperature", value = TRUE),
@@ -67,7 +77,13 @@ shinyUI(pageWithSidebar(
           plotOutput(outputId = "plot_pressure", height="100%")),
         conditionalPanel(condition = "input.with_text", p(strong("Pressure")),
                     verbatimTextOutput(outputId = "text_pressure"))),
-    
+
+    conditionalPanel(condition = "input.what_hygro_temp",
+                     conditionalPanel(condition = "input.with_graph",
+                                      plotOutput(outputId = "plot_hygro_temp", height="100%")),
+                     conditionalPanel(condition = "input.with_text", p(strong("Pressure")),
+                    verbatimTextOutput(outputId = "text_hygro_temp"))),
+      
     conditionalPanel(condition = "input.what_humid",
         conditionalPanel(condition = "input.with_graph",
           plotOutput(outputId = "plot_humid", height="100%")),

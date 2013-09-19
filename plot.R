@@ -91,6 +91,25 @@ plot_pluie = function (name, dates, pluie, options) {
   add_legends(legend='Precipitations (mm)', name=name)
 }
 
+plot_hygro_temp = function(name, dates, hygro,  max, min, options) {
+    plot(dates, hygro, col="seagreen4", type=ifelse (options$with_daily, 'l', 'n'),
+         xaxt='n', xlab="", ylab="")
+  
+    set_axes(dates,  c(min(hygro, 0), 100))
+    
+    axis(side=1, at=1:length(dates), labels=strftime(dates, format="%b"), las=1)
+    add_legends(legend='Hygro (%)', name=name)
+
+    temp_range <- range(min, max)
+    init_graph(range(dates), ylim=temp_range, axe=4)
+
+    lines (dates, max, col="tomato2")
+    lines (dates, min, col="royalblue")
+    add_legends(legend='Temp (C)', name=name, axe=4)    
+    
+    box()
+}
+
 plot_hygro = function(name, dates, hygro, options) {  
   plot(dates, hygro, col="seagreen4", type=ifelse (options$with_daily, 'l', 'n'),
        xaxt='n', xlab="", ylab="")
@@ -109,7 +128,7 @@ plot_hygro = function(name, dates, hygro, options) {
     add_regression_curve(dates, hygro, ifelse(options$with_daily, "purple", "seagreen4"), options$smooth_coeff)
   }
   
-	box()
+  box()
 }
 
 plot_temp = function(name, dates, max, min, options) {
@@ -172,7 +191,7 @@ plot_temp = function(name, dates, max, min, options) {
     abline(h=0, col="black", lty=3)
   }
   
-	box()
+  box()
 }
 
 plot_pression = function(name, dates, pression, options) {

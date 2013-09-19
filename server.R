@@ -57,6 +57,12 @@ shinyServer(function (input, output) {
       plot_pression(name, data$Date, data$Pression, input)
     })
   }, height=getVarHeight)
+
+  output$plot_hygro_temp  <- reactivePlot(function() {
+      splitPlots(selectedDataset(), function(name, data) {
+          plot_hygro_temp(name, data$Date, data$Hygrometrie, data$Temp.max, data$Temp.min, input)
+      })
+  }, height=getVarHeight)
                                        
   output$plot_summary <- reactivePlot(function() { 
     splitPlots(selectedDataset(), function(name, data) {
@@ -87,6 +93,12 @@ shinyServer(function (input, output) {
   output$text_pressure <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
       print_pression(name, data$Date, data$Pression, input)
+    })
+  })
+
+  output$text_hygro_temp <- reactiveText(function() {
+    iterateDataset(selectedDataset(), function(i, name, data) {
+#      print_hygro_temp(name, data$Date, data$Pression, input)
     })
   })
 })

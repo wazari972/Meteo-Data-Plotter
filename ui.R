@@ -13,7 +13,7 @@ shinyUI(pageWithSidebar(
       checkboxInput(inputId = "what_pressure", label = "Pressure", value = FALSE),
       checkboxInput(inputId = "what_humid", label = "Humidity", value = FALSE),
       checkboxInput(inputId = "what_summary", label = "Summary", value = FALSE),
-      checkboxInput(inputId = "what_hygro_temp", label = "Humidity/Temperature", value = TRUE)
+      checkboxInput(inputId = "what_computation", label = "Meteo Computations", value = TRUE)
     ),
     wellPanel(
       p(strong("How")),
@@ -41,13 +41,14 @@ shinyUI(pageWithSidebar(
                          checkboxInput(inputId = "with_zero", label = "With zero", value = TRUE)
                        )
       ),
-      conditionalPanel(condition = "input.what_hygro_temp == true",
+      conditionalPanel(condition = "input.what_computation == true",
                        wellPanel(
-                         p(strong("Humidity vs Temperature options")),
-                         checkboxInput(inputId = "with_max", label = "Maximal temperature", value = TRUE),
-                         checkboxInput(inputId = "with_med", label = "Average temperature", value = FALSE),
-                         checkboxInput(inputId = "with_min", label = "Minimal temperature", value = TRUE),
-                         checkboxInput(inputId = "with_zero", label = "With zero", value = TRUE)
+                           p(strong("Meteo computation options")),
+                           checkboxInput(inputId = "with_min", label = "Minimal temperature", value = TRUE),
+                           checkboxInput(inputId = "with_drew", label = "Drew-point temperature", value = FALSE),
+                            conditionalPanel(condition = "input.with_drew == true",
+                                             checkboxInput(inputId = "with_drewlimit", label = "Drew-point limit", value = FALSE)),
+                           checkboxInput(inputId = "with_specific", label = "With specific humidity", value = TRUE)
                        )
       ),
       conditionalPanel(condition = "input.what_rain == true",
@@ -78,11 +79,11 @@ shinyUI(pageWithSidebar(
         conditionalPanel(condition = "input.with_text", p(strong("Pressure")),
                     verbatimTextOutput(outputId = "text_pressure"))),
 
-    conditionalPanel(condition = "input.what_hygro_temp",
+    conditionalPanel(condition = "input.what_computation",
                      conditionalPanel(condition = "input.with_graph",
-                                      plotOutput(outputId = "plot_hygro_temp", height="100%")),
+                                      plotOutput(outputId = "plot_computation", height="100%")),
                      conditionalPanel(condition = "input.with_text", p(strong("Pressure")),
-                    verbatimTextOutput(outputId = "text_hygro_temp"))),
+                    verbatimTextOutput(outputId = "text_computation"))),
       
     conditionalPanel(condition = "input.what_humid",
         conditionalPanel(condition = "input.with_graph",

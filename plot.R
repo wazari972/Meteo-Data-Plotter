@@ -91,22 +91,74 @@ plot_pluie = function (name, dates, pluie, options) {
   add_legends(legend='Precipitations (mm)', name=name)
 }
 
-plot_hygro_temp = function(name, dates, hygro,  max, min, options) {
-    plot(dates, hygro, col="seagreen4", type=ifelse (options$with_daily, 'l', 'n'),
-         xaxt='n', xlab="", ylab="")
-  
-    set_axes(dates,  c(min(hygro, 0), 100))
+spec_humid = function(temp, humid) {
+    return((0.622 * p_sat(temp) * humid) / (101325 - p_sat(temp) * humid))
+}
+
+p_sat = function (temp) {
+    #temp = max(0, temp)
+    return(exp(
+        23.3265 -
+        (3802.7/(temp + 273.18)) -
+        (472.68/(temp + 273.18))^2))
+}
+
+drew_point = function(temp, humid) {
+    return(temp - ((100 - humid)/5))
+}
+
+plot_computation = function(name, dates, data, options) {
+    min = data$Temp.min
+    max = data$Temp.max
+    medium <- get_med(min, max)
+    hygro = data$Hygrometrie
+
+    drew = drew_point(max, hygro)
+   
+    temp_range = range(drew, medium, min, max)
+    
+    plot(dates, drew, col="tomato2", type='n', xaxt='n', xlab="", ylab="", ylim=temp_range)
+
+    if (options$with_min) {
+        if (options$with_daily) {
+            lines (dates, min, col="royalblue")
+        }
+        
+        if (options$with_smooth) {
+            add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$smooth_coeff)
+        }
+        
+    }
+    if (options$with_drew) {
+        if (options$with_daily) {
+            lines (dates, drew, col="green")
+        }
+        
+        if (options$with_smooth) {
+            add_regression_curve(dates, drew, ifelse(options$with_daily, "pink", "green"), options$smooth_coeff)
+        }
+    }
+    if (options$with_drewlimit) {
+        abline(h=23, col="green", lty=2)
+    }
     
     axis(side=1, at=1:length(dates), labels=strftime(dates, format="%b"), las=1)
-    add_legends(legend='Hygro (%)', name=name)
+    add_legends(legend='Temp', name=name)
 
-    temp_range <- range(min, max)
-    init_graph(range(dates), ylim=temp_range, axe=4)
+    if (options$with_specific) {
+        humids = spec_humid(medium, hygro)
+        init_graph(range(dates), ylim=range(humids), axe=4)
 
-    lines (dates, max, col="tomato2")
-    lines (dates, min, col="royalblue")
-    add_legends(legend='Temp (C)', name=name, axe=4)    
-    
+        if (options$with_daily) {
+            lines (dates, humids, col="black") 
+        }
+        
+        if (options$with_smooth) {
+            add_regression_curve(dates, humids, ifelse(options$with_daily, "purple", "black"), options$smooth_coeff)
+        }
+        
+        add_legends(legend='Specific Humidity', name=name, axe=4)    
+    }
     box()
 }
 
@@ -160,9 +212,9 @@ plot_temp = function(name, dates, max, min, options) {
       lines (dates, min, col="royalblue")
     }
     
-	  if (options$with_smooth) {
-	    add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$smooth_coeff)
-	  }
+    if (options$with_smooth) {
+        add_regression_curve(dates, min, ifelse(options$with_daily, "tomato2", "royalblue"), options$smooth_coeff)
+    }
     
     if (options$with_mean) {
       meanMin <- mean(min)

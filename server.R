@@ -58,9 +58,9 @@ shinyServer(function (input, output) {
     })
   }, height=getVarHeight)
 
-  output$plot_hygro_temp  <- reactivePlot(function() {
+  output$plot_computation  <- reactivePlot(function() {
       splitPlots(selectedDataset(), function(name, data) {
-          plot_hygro_temp(name, data$Date, data$Hygrometrie, data$Temp.max, data$Temp.min, input)
+          plot_computation(name, data$Date, data, input)
       })
   }, height=getVarHeight)
                                        
@@ -98,7 +98,7 @@ shinyServer(function (input, output) {
 
   output$text_hygro_temp <- reactiveText(function() {
     iterateDataset(selectedDataset(), function(i, name, data) {
-#      print_hygro_temp(name, data$Date, data$Pression, input)
+#      print_computation(name, data$Date, data$Pression, input)
     })
   })
 })
